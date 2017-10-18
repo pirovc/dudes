@@ -41,7 +41,7 @@ If you have your reads already mapped against a set of references (.sam file):
 If you have your reads (.fastq files):
 	
 	Download the pre-compiled bowtie2-index (generated with bowtie2 version 2.2.9):
-		https://www.dropbox.com/s/339sof2ffpxp08j/ba_refseq_cg_20150326_av.tar.gz?dl=1
+		https://zenodo.org/record/815498/files/ba_refseq_cg_20150326_av.tar.gz
 		
 	Unpack:
 		tar zxfv ba_refseq_cg_20150326_av.tar.gz
@@ -63,7 +63,7 @@ DUDesDB.py links taxonomic information and reference sequences identifiers (GI o
 
 ** It is possible to run DUDes with previously generated alignment/map files with a pre-compiled database (see below) or with a database generated from a different source/date/version from the mapping tool. DUDes' algorithm filters references (and matches) not found in DUDes database before performing the analysis. Notice that some information can be lost in this case.
 	
-It is possible to use the pre-compiled database based on the set of NCBI refseq complete genome sequences of Bacteria and Archaea from 26-Mar-2015 and a bowtie2-index (generated with bowtie2 version 2.2.9) matching this database. The files can be downloaded at: https://www.dropbox.com/s/339sof2ffpxp08j/ba_refseq_cg_20150326_av.tar.gz?dl=1
+It is possible to use the pre-compiled database based on the set of NCBI refseq complete genome sequences of Bacteria and Archaea from 26-Mar-2015 and a bowtie2-index (generated with bowtie2 version 2.2.9) matching this database. The files can be downloaded at: https://zenodo.org/record/815498/files/ba_refseq_cg_20150326_av.tar.gz
 	
 ------
 DUDesDB
