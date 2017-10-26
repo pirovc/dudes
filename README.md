@@ -13,37 +13,37 @@ Python 3 with numpy (mandatory) and pandas (optional)
 Quick guide:
 ------------
 
-- Download pre-compiled bowtie2 index and dudes database:
+- Download the pre-compiled index and database:
 	
 | Info 	| Date	| Size	| Link	|
 | --- 	| --- 	| ---	| ---	|
 | Archaea + Bacteria - RefSeq Complete Genomes | 2015-03 | 13.2 GB | https://zenodo.org/record/1036748/files/dudesdb_arc-bac_refseq-cg_201503.tar.gz |
 | Archaea + Bacteria - RefSeq Complete Genomes | 2017-09 | 37.7 GB | https://zenodo.org/record/1037091/files/dudesdb_arc-bac_refseq-cg_201709.tar.gz |
-| Fungi + Viral - RefSeq Complete Genomes | 2017-09 | 12.7 GB | - |
+| Fungal + Viral - RefSeq Complete Genomes | 2017-09 | 9.5 GB | https://zenodo.org/record/1037288/files/dudesdb_fun-vir_refseq-cg_201709.tar.gz |
 
 - Unpack:
 	
-	tar zxfv dudesdb_arc-bac_refseq-cg_YYYYMM.tar.gz
+	tar zxfv dudesdb_arc-bac_refseq-cg_201709.tar.gz
 
-- Map your reads (fastq) with bowtie2 (any other mapper can be used  - see `-i` parameter on DUDes.py):
+- Map your reads (fastq) with bowtie2 (any other mapper/index can be used - check `-i` parameter on DUDes.py):
 	
-	bowtie2 -x dudesdb_arc-bac_refseq-cg_YYYYMM/arc-bac_refseq-cg_YYYYMM --no-unal --very-fast -k 10 -1 reads.1.fq -2 reads.2.fq -S mapping_output.sam
+	bowtie2 -x dudesdb_arc-bac_refseq-cg_201709/arc-bac_refseq-cg_201709 --no-unal --very-fast -k 10 -1 reads.1.fq -2 reads.2.fq -S mapping_output.sam
 
 - Run DUDes:
 	
-	[python3] DUDes.py -s mapping_output.sam -d dudesdb_arc-bac_refseq-cg_YYYYMM/arc-bac_refseq-cg_YYYYMM.npz -o output_prefix
+	[python3] DUDes.py -s mapping_output.sam -d dudesdb_arc-bac_refseq-cg_201709/arc-bac_refseq-cg_201709.npz -o output_prefix
 
 Example with sample data:
 -------------------------
 
-	[python3] DUDes.py -s sampledata/hiseq_accuracy_k60.sam -d dudesdb/arc-bac_refseq-cg_201503.npz -o sample_data_profile_out
+	[python3] DUDes.py -s sampledata/hiseq_accuracy_k60.sam -d sampledata/arc-bac_refseq-cg_201503.npz -o sampledata/dudes_profile_output
 	
-- The sample data is based on a test set of bacterial whole-genome shotgun reads comprising 10 organisms (HiSeq - 10000 reads) [1]. The read set was mapped with Bowtie2 [2] against the set of complete genome sequences (Archaea+Bacteria - 201503).
+- The sample data is based on a set of bacterial whole-genome shotgun reads comprising 10 organisms (HiSeq - 10000 reads [1]). The read set was mapped with Bowtie2 [2] against the set of complete genome sequences (dudesdb_arc-bac_refseq-cg_201503).
 
 Custom index and dudes database:
 --------------------------------
 
-Index your reference file (.fasta) with bowtie2 (any other mapper can be used - see `-i` parameter on DUDes.py):
+Index your reference file (.fasta) with bowtie2 (any other mapper/index can be used - check `-i` parameter on DUDes.py):
 	
 	bowtie2-build -f references.fasta custom_db
 	
@@ -58,11 +58,11 @@ Create a dudes database based on the same set of references:
 		Old NCBI header [>gi|158333233|ref|NC_009925.1| Acaryochloris marina MBIC11017, complete genome.]
 			-m 'gi'
 
-- `nodes.dmp` and `names.dmp` can be obtained at:
+- `nodes.dmp` and `names.dmp` can be obtained from:
 	
 		ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz
 		
-- `nucl_gb.accession2taxid`, `nucl_wgs.accession2taxid` or `gi_taxid_nucl.dmp.gz`(depending on your reference origin) can be obtained at:
+- `nucl_gb.accession2taxid`, `nucl_wgs.accession2taxid` or `gi_taxid_nucl.dmp.gz`(depending on your reference origin) can be obtained from:
 		
 		ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/nucl_XX.accession2taxid
 		ftp://ftp.ncbi.nih.gov/pub/taxonomy/gi_taxid_nucl.dmp.gz
