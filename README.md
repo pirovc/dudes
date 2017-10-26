@@ -18,7 +18,8 @@ Quick guide:
 | Info 	| Date	| Size	| Link	|
 | --- 	| --- 	| ---	| ---	|
 | Archaea + Bacteria - RefSeq Complete Genomes | 2015-03 | 13.2 GB | https://zenodo.org/record/1036748/files/dudesdb_arc-bac_refseq-cg_201503.tar.gz |
-| Archaea + Bacteria - RefSeq Complete Genomes | 2017-09 | 37.7 GB | x |
+| Archaea + Bacteria - RefSeq Complete Genomes | 2017-09 | 37.7 GB | https://zenodo.org/record/1037091/files/dudesdb_arc-bac_refseq-cg_201709.tar.gz |
+| Fungi + Viral - RefSeq Complete Genomes | 2017-09 | 12.7 GB | - |
 
 - Unpack:
 	
