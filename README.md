@@ -1,24 +1,10 @@
+# DUDes: a top-down taxonomic profiler for metagenomics
+
+Vitor C. Piro (vitorpiro@gmail.com)
+
 [![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat-square)](http://bioconda.github.io/recipes/dudes/README.html)
 
-NEW:
-----
-2016-11-03 (v0.07):
-- code changed to python 3
-- changed .ddb to a new and smaller database format -> .npz
-
-2016-03-23 (v0.06):
-- New database format supporing GI or accession.version as an identifier (DUDesDB.py parameter -m).
-- Check for sam flags
-- Faster code for identification matrix evaluation
-
-About:
-------
-DUDes is a taxonomic profiler for NGS metagenomic samples
-
-Contact:
---------
-Vitor C. Piro - PiroV@rki.de - vitorpiro@gmail.com
-Bernhard Y. Renard - RenardB@rki.de
+Piro, V. C., Lindner, M. S., & Renard, B. Y. (2016). DUDes: a top-down taxonomic profiler for metagenomics. Bioinformatics, 32(15), 2272–2280. http://doi.org/10.1093/bioinformatics/btw150
 
 Requirements:
 -------------
@@ -180,6 +166,18 @@ The read set was mapped with Bowtie2 [2] against the set of complete genome sequ
 Running DUDes with the sample data:
 
 	python3 DUDes.py -s sampledata/hiseq_accuracy_k60.sam -d dudesdb/ba_refseq_cg_20150326_gi_0.07.npz -o sample_data_profile_out
+
+Change log:
+-----------
+
+2016-11-03 (v0.07):
+- code changed to python 3
+- changed .ddb to a new and smaller database format -> .npz
+
+2016-03-23 (v0.06):
+- New database format supporing GI or accession.version as an identifier (DUDesDB.py parameter -m).
+- Check for sam flags
+- Faster code for identification matrix evaluation
 
 References:
 -----------
