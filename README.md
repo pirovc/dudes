@@ -26,32 +26,52 @@ Python 3 with numpy (mandatory) and pandas (optional)
 
 Quick guide:
 ------------
-If you have your reads already mapped against a set of references (.sam file):
-	
-	Run DUDes*:
-		python3 DUDes.py -s mapping_output.sam -d dudesdb/ba_refseq_cg_20150326_av_0.07.npz -o output_prefix
 
-	*Choose the dudes database (.npz) considering the format of the headers in your reference sequences:
-		-- New NCBI header [>NC_009925.1 Acaryochloris marina MBIC11017, complete genome.]
-			dudesdb/ba_refseq_cg_20150326_av_0.07.npz
-		-- Old NCBI header [>gi|158333233|ref|NC_009925.1| Acaryochloris marina MBIC11017, complete genome.]
-			dudesdb/ba_refseq_cg_20150326_gi_0.07.npz
+Download pre-compiled bowtie2 index and dudes database:
+	
+| Info | Date | Size | Link |
+| --- | --- | --- | --- |
+| Archaea + Bacteria - RefSeq Complete Genomes | 2015-03 | 13.2 GB | https://zenodo.org/record/1036748/files/dudesdb_arc-bac_refseq-cg_201503.tar.gz |
+| Archaea + Bacteria - RefSeq Complete Genomes | 2017-09 | x | x |
 			
+Unpack:
+	
+	tar zxfv dudesdb_arc-bac_refseq-cg_YYYYMM.tar.gz
 
-If you have your reads (.fastq files):
+Map your reads (fastq) with bowtie2 (or any other mapper can be used  - see `-i` parameter on DUDes.py):
 	
-	Download the pre-compiled bowtie2-index (generated with bowtie2 version 2.2.9):
-		https://zenodo.org/record/815498/files/ba_refseq_cg_20150326_av.tar.gz
-		
-	Unpack:
-		tar zxfv ba_refseq_cg_20150326_av.tar.gz
-		
-	Run bowtie2:
-		bowtie2 -x ba_refseq_cg_20150326_av.fasta --no-unal --very-fast -k 10 -1 reads.1.fq -2 reads.2.fq -2 -S mapping_output.sam
+	bowtie2 -x dudesdb_arc-bac_refseq-cg_YYYYMM/arc-bac_refseq-cg_YYYYMM --no-unal --very-fast -k 10 -1 reads.1.fq -2 reads.2.fq -S mapping_output.sam
+
+Run DUDes:
 	
-	Run DUDes:
-		python3 DUDes.py -s mapping_output.sam -d dudesdb/ba_refseq_cg_20150326_av_0.07.npz -o output_prefix
+	[python3] DUDes.py -s mapping_output.sam -d dudesdb_arc-bac_refseq-cg_YYYYMM/arc-bac_refseq-cg_YYYYMM.npz -o output_prefix
+
+Custom index and dudes database:
+--------------------------------
+
+Index your reference file (.fasta) with bowtie2 (any other mapper can be used - see `-i` parameter on DUDes.py):
+	
+	bowtie2-build -f references.fasta ref-index
+	
+Create a dudes database based on the same set of references:
+
+	[python3] DUDesDB.py -m 'av' -f references.fasta -n nodes.dmp -a names.dmp -g nucl_gb.accession2taxid -t 12 -o dudes_db_output
+	
+- Choose the parameter `-m` considering the format of the headers in your reference sequences:
+
+		New NCBI header [>NC_009925.1 Acaryochloris marina MBIC11017, complete genome.]
+			-m 'av'
+		Old NCBI header [>gi|158333233|ref|NC_009925.1| Acaryochloris marina MBIC11017, complete genome.]
+			-m 'gi'
+
+- `nodes.dmp` and `names.dmp` can be obtained at:
+	
+		ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz
 		
+- `nucl_gb.accession2taxid` or `nucl_wgs.accession2taxid` (depending on your reference origin) can be obtained at:
+
+		ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/
+
 Details:
 --------
 
@@ -61,9 +81,8 @@ DUDes.py requires two main input files to perform the taxonomic analysis:
 
 DUDesDB.py links taxonomic information and reference sequences identifiers (GI or accession.version). The input to DUDesDB script should be the same set of reference sequences (or a subset with matching identifiers)** used for the index database of the mapping tool.
 
-** It is possible to run DUDes with previously generated alignment/map files with a pre-compiled database (see below) or with a database generated from a different source/date/version from the mapping tool. DUDes' algorithm filters references (and matches) not found in DUDes database before performing the analysis. Notice that some information can be lost in this case.
+** It is possible to run DUDes with previously generated alignment/map files with a pre-compiled database (see above) or with a database generated from a different source/date/version from the mapping tool. DUDes' algorithm filters references (and matches) not found in DUDes database before performing the analysis. Notice that some information can be lost in this case.
 	
-It is possible to use the pre-compiled database based on the set of NCBI refseq complete genome sequences of Bacteria and Archaea from 26-Mar-2015 and a bowtie2-index (generated with bowtie2 version 2.2.9) matching this database. The files can be downloaded at: https://zenodo.org/record/815498/files/ba_refseq_cg_20150326_av.tar.gz
 	
 ------
 DUDesDB
