@@ -38,7 +38,7 @@ Unpack:
 	
 	tar zxfv dudesdb_arc-bac_refseq-cg_YYYYMM.tar.gz
 
-Map your reads (fastq) with bowtie2 (or any other mapper can be used  - see `-i` parameter on DUDes.py):
+Map your reads (fastq) with bowtie2 (any other mapper can be used  - see `-i` parameter on DUDes.py):
 	
 	bowtie2 -x dudesdb_arc-bac_refseq-cg_YYYYMM/arc-bac_refseq-cg_YYYYMM --no-unal --very-fast -k 10 -1 reads.1.fq -2 reads.2.fq -S mapping_output.sam
 
@@ -68,9 +68,10 @@ Create a dudes database based on the same set of references:
 	
 		ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz
 		
-- `nucl_gb.accession2taxid` or `nucl_wgs.accession2taxid` (depending on your reference origin) can be obtained at:
-
-		ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/
+- `nucl_gb.accession2taxid`, `nucl_wgs.accession2taxid` or `gi_taxid_nucl.dmp.gz`(depending on your reference origin) can be obtained at:
+		
+		ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/nucl_XX.accession2taxid
+		ftp://ftp.ncbi.nih.gov/pub/taxonomy/gi_taxid_nucl.dmp.gz
 
 Details:
 --------
