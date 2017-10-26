@@ -13,35 +13,42 @@ Python 3 with numpy (mandatory) and pandas (optional)
 Quick guide:
 ------------
 
-Download pre-compiled bowtie2 index and dudes database:
+- Download pre-compiled bowtie2 index and dudes database:
 	
-| Info | Date | Size | Link |
-| --- | --- | --- | --- |
+| Info 	| Date	| Size	| Link	|
+| --- 	| --- 	| ---	| ---	|
 | Archaea + Bacteria - RefSeq Complete Genomes | 2015-03 | 13.2 GB | https://zenodo.org/record/1036748/files/dudesdb_arc-bac_refseq-cg_201503.tar.gz |
 | Archaea + Bacteria - RefSeq Complete Genomes | 2017-09 | x | x |
-			
-Unpack:
+
+- Unpack:
 	
 	tar zxfv dudesdb_arc-bac_refseq-cg_YYYYMM.tar.gz
 
-Map your reads (fastq) with bowtie2 (any other mapper can be used  - see `-i` parameter on DUDes.py):
+- Map your reads (fastq) with bowtie2 (any other mapper can be used  - see `-i` parameter on DUDes.py):
 	
 	bowtie2 -x dudesdb_arc-bac_refseq-cg_YYYYMM/arc-bac_refseq-cg_YYYYMM --no-unal --very-fast -k 10 -1 reads.1.fq -2 reads.2.fq -S mapping_output.sam
 
-Run DUDes:
+- Run DUDes:
 	
 	[python3] DUDes.py -s mapping_output.sam -d dudesdb_arc-bac_refseq-cg_YYYYMM/arc-bac_refseq-cg_YYYYMM.npz -o output_prefix
+
+Example with sample data:
+-------------------------
+
+	[python3] DUDes.py -s sampledata/hiseq_accuracy_k60.sam -d dudesdb/arc-bac_refseq-cg_201503.npz -o sample_data_profile_out
+	
+- The sample data is based on a test set of bacterial whole-genome shotgun reads comprising 10 organisms (HiSeq - 10000 reads) [1]. The read set was mapped with Bowtie2 [2] against the set of complete genome sequences (Archaea+Bacteria - 201503).
 
 Custom index and dudes database:
 --------------------------------
 
 Index your reference file (.fasta) with bowtie2 (any other mapper can be used - see `-i` parameter on DUDes.py):
 	
-	bowtie2-build -f references.fasta ref-index
+	bowtie2-build -f references.fasta custom_db
 	
 Create a dudes database based on the same set of references:
 
-	[python3] DUDesDB.py -m 'av' -f references.fasta -n nodes.dmp -a names.dmp -g nucl_gb.accession2taxid -t 12 -o dudes_db_output
+	[python3] DUDesDB.py -m 'av' -f references.fasta -n nodes.dmp -a names.dmp -g nucl_gb.accession2taxid -t 12 -o custom_db
 	
 - Choose the parameter `-m` considering the format of the headers in your reference sequences:
 
@@ -70,9 +77,10 @@ DUDesDB.py links taxonomic information and reference sequences identifiers (GI o
 
 ** It is possible to run DUDes with previously generated alignment/map files with a pre-compiled database (see above) or with a database generated from a different source/date/version from the mapping tool. DUDes' algorithm filters references (and matches) not found in DUDes database before performing the analysis. Notice that some information can be lost in this case.
 	
-	
-------
-DUDesDB
+Parameters:
+-----------
+
+	$ DUDesDB.py -h
 
 	./DUDesDB.py [-h] [-m <reference_mode>] -f <fasta_file> -n <nodes_file>
 					  -g <ref2tax_file> [-a <names_file>] [-o <output_prefix>]
@@ -108,9 +116,9 @@ DUDesDB
 	  
 	  -v                   show program's version number and exit
 
+  -----
   
-------
-DUDes
+	$ DUDes.py -h
 
 	./DUDes.py [-h] -s <sam_file> -d <database_file> [-i <sam_format>]
 				 [-t <threads>] [-x <taxid_start>] [-m <max_read_matches>]
@@ -154,18 +162,6 @@ DUDes
 	  -o <output_prefix>    Output prefix. Default: STDOUT
 	  
 	  -v                    show program's version number and exit
-
-------
-
-Example:
----------
-
-The sample data is based on a test set of bacterial whole-genome shotgun reads comprising 10 organisms (HiSeq - 10000 reads) [1].
-The read set was mapped with Bowtie2 [2] against the set of complete genome sequences (26-Mar-2015).
-
-Running DUDes with the sample data:
-
-	python3 DUDes.py -s sampledata/hiseq_accuracy_k60.sam -d dudesdb/ba_refseq_cg_20150326_gi_0.07.npz -o sample_data_profile_out
 
 Change log:
 -----------
