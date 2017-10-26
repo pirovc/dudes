@@ -8,7 +8,7 @@ Piro, V. C., Lindner, M. S., & Renard, B. Y. (2016). DUDes: a top-down taxonomic
 
 Requirements:
 -------------
-Python 3 with numpy (mandatory) and pandas (optional)
+python3, numpy and pandas (for DUDesDB.py only)
 
 Quick guide:
 ------------
