@@ -89,7 +89,6 @@ def main():
 		return
 	else:
 		print("\n\t%d unique references found" % len(refids))
-
 	sys.stdout.write("Done. Elapsed time: " + str(time.time() - tx) + " seconds\n")
 		
 	# Load nodes.dmp
@@ -120,7 +119,6 @@ def main():
 			refid_taxid.append(np.array(pd.read_csv(file, compression='gzip' if file.endswith(".gz") else None, sep='\t', header=None, skiprows=1, usecols=[1,2], converters={1:lambda x: refids_lookup[x] if x in refids else np.nan}).dropna(how='any'),dtype=int))
 	# Concatenate files together
 	refid_taxid = np.concatenate(refid_taxid, axis=0)
-		
 	sys.stdout.write(" Done. Elapsed time: " + str(time.time() - tx) + " seconds\n")
 	
 	# Output differences and verify the taxids on nodes file
@@ -130,13 +128,17 @@ def main():
 	seq_without_refid = len(refids) - unique_refs_used
 	sys.stdout.write("\n\t%d sequences without entries on %s\n" % ((seq_without_refid, ",".join(args.ref2tax_files))))
 	if seq_without_refid: 
-		print("\n".join([ref for ref in refids if ref not in refids_lookup.keys()]))
+		refids_nparr = np.array(list(refids))
+		print("\n".join(refids_nparr[~np.in1d(refids_nparr, list(refids_lookup.keys()))]))
+		#print("\n".join([ref for ref in refids if ref not in refids_lookup.keys()]))
+		
 	refid_with_valid_taxid = np.in1d(refid_taxid[:,1],nodes[:,0])
 	seq_without_taxid = unique_refs_used - sum(refid_with_valid_taxid)
 	sys.stdout.write("\t%d sequences without taxid on %s\n" % (seq_without_taxid, args.nodes_file))
 	if seq_without_taxid:
-		print("taxids not found: ", ", ".join([str(taxid) for taxid in np.unique(refid_taxid[~refid_with_valid_taxid,1])]))
-		print("\n".join([ref for ref in refids if refids_lookup[ref] in refid_taxid[~refid_with_valid_taxid,0]]))
+		refids_lookup_rev = {v: k for k, v in refids_lookup.items()}
+		print("\n".join([refids_lookup_rev[r] + "\t" + str(t) for r,t in refid_taxid[~refid_with_valid_taxid]]))
+		#print("\n".join([ref for ref in refids if refids_lookup[ref] in refid_taxid[~refid_with_valid_taxid,0]]))
 	# filter out entries without taxid matches on nodes.dmp
 	refid_taxid = refid_taxid[refid_with_valid_taxid]
 	sys.stdout.write("Done. Elapsed time: " + str(time.time() - tx) + " seconds\n")
