@@ -25,8 +25,8 @@
 
 import numpy as np
 import argparse, subprocess
-from Ranks import Ranks
-from parse_names import parse_names
+from dudes.Ranks import Ranks
+from dudes.parse_names import parse_names
 from collections import defaultdict
 import multiprocessing as mp
 import time, sys

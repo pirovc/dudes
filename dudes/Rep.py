@@ -1,6 +1,6 @@
 import numpy as np
 from collections import  defaultdict
-from Util import *
+from dudes.Util import *
 
 class Rep:
 	columns = ['TaxID','ParentTaxID','RankID','Abundance']
