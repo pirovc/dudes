@@ -125,24 +125,39 @@ def main():
 	sys.stdout.write("Parsing nodes and taxids ...")
 	tx = time.time()
 	unique_refs_used = np.unique(refid_taxid[:,0]).size # found on the ref2tax files - should be already unique, just to make sure
+	if not unique_refs_used:
+		print("\n\tNo matches on taxonomy found. Check your reference to taxonomy file[s] (-g): ", ",".join(args.ref2tax_files))
+		return
+	
 	seq_without_refid = len(refids) - unique_refs_used
-	sys.stdout.write("\n\t%d sequences without entries on %s\n" % ((seq_without_refid, ",".join(args.ref2tax_files))))
+	sys.stdout.write("\n\tIgnoring %d (out of %d) sequences without entries on %s\n" % ((seq_without_refid, len(refids), ",".join(args.ref2tax_files))))
 	if seq_without_refid: 
 		refids_nparr = np.array(list(refids))
 		print("\n".join(refids_nparr[~np.in1d(refids_nparr, list(refids_lookup.keys()))]))
-		#print("\n".join([ref for ref in refids if ref not in refids_lookup.keys()]))
+		del refids_nparr
 		
 	refid_with_valid_taxid = np.in1d(refid_taxid[:,1],nodes[:,0])
 	seq_without_taxid = unique_refs_used - sum(refid_with_valid_taxid)
-	sys.stdout.write("\t%d sequences without taxid on %s\n" % (seq_without_taxid, args.nodes_file))
+	sys.stdout.write("\tIgnoring %d (out of %d) sequences without taxid on %s\n" % (seq_without_taxid, unique_refs_used, args.nodes_file))
 	if seq_without_taxid:
 		refids_lookup_rev = {v: k for k, v in refids_lookup.items()}
 		print("\n".join([refids_lookup_rev[r] + "\t" + str(t) for r,t in refid_taxid[~refid_with_valid_taxid]]))
-		#print("\n".join([ref for ref in refids if refids_lookup[ref] in refid_taxid[~refid_with_valid_taxid,0]]))
-	# filter out entries without taxid matches on nodes.dmp
-	refid_taxid = refid_taxid[refid_with_valid_taxid]
+
+		# filter from lookup (rev) and overwrite current lookup
+		for r in refid_taxid[~refid_with_valid_taxid,0]:
+			del refids_lookup_rev[r]
+		refids_lookup = {v: k for k, v in refids_lookup_rev.items()}
+		del refids_lookup_rev
+		# filter out entries without taxid matches on nodes.dmp
+		refid_taxid = refid_taxid[refid_with_valid_taxid]
+		
 	sys.stdout.write("Done. Elapsed time: " + str(time.time() - tx) + " seconds\n")
 	
+	unique_refs_used_filtered = np.unique(refid_taxid[:,0]).size
+	if not unique_refs_used_filtered:
+		print("\n\tNo matches on nodes found. Check your file (-n): ", args.nodes_file)
+		return
+		
 	# ------- MakeDB -----------
 	sys.stdout.write("Creating database ...")
 	tx = time.time()
