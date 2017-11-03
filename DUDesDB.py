@@ -42,7 +42,7 @@ def main():
 		
 	parser = argparse.ArgumentParser(description='DUDesDB')
 	parser.add_argument('-m', metavar='<reference_mode>', dest="reference_mode", default="av", help="'gi' uses the GI as the identifier (For headers like: >gi|158333233|ref|NC_009925.1|) [NCBI is phasing out sequence GI numbers in September 2016]. 'av' uses the accession.version as the identifier (for headers like: >NC_013791.2).	Default: 'av'")
-	parser.add_argument('-f', required=True, metavar='<fasta_file>', dest="fasta_file", help="Reference fasta file for header extraction only, plain file or gzipped -  the same file used to generate the read mapping index. Each sequence header '>' should contain a identifier as defined in the reference mode.")
+	parser.add_argument('-f', required=True, metavar='<fasta_files>', dest="fasta_files", nargs="*", help="Reference fasta file(s) for header extraction only, plain or gzipped -  the same file used to generate the read mapping index. Each sequence header '>' should contain a identifier as defined in the reference mode.")
 	parser.add_argument('-g', required=True, metavar='<ref2tax_files>', dest="ref2tax_files", nargs="*", help="reference id to taxid file(s): 'gi_taxid_nucl.dmp[.gz]' --> 'gi' mode, '*.accession2taxid[.gz]' --> 'av' mode [from NCBI taxonomy database ftp://ftp.ncbi.nih.gov/pub/taxonomy/]")
 	parser.add_argument('-n', required=True, metavar='<nodes_file>', dest="nodes_file", help="nodes.dmp file [from NCBI taxonomy database ftp://ftp.ncbi.nih.gov/pub/taxonomy/]")
 	parser.add_argument('-a', metavar='<names_file>', dest="names_file", help="names.dmp file [from NCBI taxonomy database ftp://ftp.ncbi.nih.gov/pub/taxonomy/]")
@@ -60,15 +60,13 @@ def main():
 	
 	# Load reference identifiers from fasta file (in a set for fast lookup)
 	# refids = [identifier]
-	sys.stdout.write("Extracting reference identifiers (%s) ..." % args.fasta_file)
+	sys.stdout.write("Extracting reference identifiers (%s) ..." % ",".join(args.fasta_files))
 	tx = time.time()
-	gz = True if args.fasta_file.endswith(".gz") else False
 	try: # shell - faster
-		cmd = "z" if args.fasta_file.endswith(".gz") else "" #zgrap parse .gz and normal files
 		if args.reference_mode=="gi":
-			cmd += 'grep -o "^>gi|[0-9]*" ' + args.fasta_file + ' | sed "s/>gi|//g"'
+			cmd = 'zgrep -h -o "^>gi|[0-9]*" ' + " ".join(args.fasta_files) + ' | sed "s/>gi|//g"'
 		else:
-			cmd += 'grep -o "^>[A-Z0-9_\.]*" ' + args.fasta_file + ' | sed "s/>//g"'
+			cmd = 'zgrep -h -o "^>[A-Z0-9_\.]*" ' + " ".join(args.fasta_files) + ' | sed "s/>//g"'
 		out = subprocess.getoutput(cmd)
 		refids = set(l for l in out.split('\n') if l)
 	except: # python
@@ -80,15 +78,13 @@ def main():
 			regex = re.compile('>[A-Z0-9_\.]*')
 			slice = 1	
 		refids = set()
-		if args.fasta_file.endswith(".gz"):
-			file = gzip.open(args.fasta_file, 'rt')
-		else:
-			file = open(args.fasta_file,'r')
-		for f in file:
-			if f[0]==">":
-				r = regex.search(f)
-				if r: 
-					if len(r.group())>1: refids.add(r.group()[slice:])
+		for file in args.fasta_files:
+			f = gzip.open(file, 'rt') if file.endswith(".gz") else open(file,'r')
+			for line in f:
+				if line[0]==">":
+					r = regex.search(line)
+					if r: 
+						if len(r.group())>1: refids.add(r.group()[slice:])
 
 	if not refids:
 		print("\n\tNo references found. Check the reference mode (-m) and your reference headers.")
