@@ -40,7 +40,7 @@ def main():
 	
 	global nodes
 		
-	parser = argparse.ArgumentParser(description='DUDesDB')
+	parser = argparse.ArgumentParser(prog='DUDesDB.py')
 	parser.add_argument('-m', metavar='<reference_mode>', dest="reference_mode", default="av", help="'gi' uses the GI as the identifier (For headers like: >gi|158333233|ref|NC_009925.1|) [NCBI is phasing out sequence GI numbers in September 2016]. 'av' uses the accession.version as the identifier (for headers like: >NC_013791.2).	Default: 'av'")
 	parser.add_argument('-f', required=True, metavar='<fasta_files>', dest="fasta_files", nargs="*", help="Reference fasta file(s) for header extraction only, plain or gzipped -  the same file used to generate the read mapping index. Each sequence header '>' should contain a identifier as defined in the reference mode.")
 	parser.add_argument('-g', required=True, metavar='<ref2tax_files>', dest="ref2tax_files", nargs="*", help="reference id to taxid file(s): 'gi_taxid_nucl.dmp[.gz]' --> 'gi' mode, '*.accession2taxid[.gz]' --> 'av' mode [from NCBI taxonomy database ftp://ftp.ncbi.nih.gov/pub/taxonomy/]")

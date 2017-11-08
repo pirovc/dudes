@@ -58,7 +58,7 @@ def main():
 	global min_group_size
 	global bin_size
 
-	parser = argparse.ArgumentParser(prog='DUDes')
+	parser = argparse.ArgumentParser(prog='DUDes.py')
 	parser.add_argument('-s',required=True, metavar='<sam_file>', dest="sam_file", help="Alignment/mapping file in SAM format. DUDes does not depend on any specific read mapper, but it requires header information (@SQ SN:gi|556555098|ref|NC_022650.1| LN:55956) and mismatch information (check -i)")
 	parser.add_argument('-d',required=True, metavar='<database_file>', dest="database_file", help="Database file (output from DUDesDB [.npz])")
 	parser.add_argument('-i', metavar='<sam_format>', dest="sam_format", default="nm", help="SAM file format ['nm': sam file with standard cigar string plus NM flag (NM:i:[0-9]*) for mismatches count | 'ex': just the extended cigar string]. Default: 'nm'")
