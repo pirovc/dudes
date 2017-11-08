@@ -43,16 +43,16 @@ Usage:
 | Archaea + Bacteria - RefSeq Complete Genomes | 2017-09 | 37.7 GB | https://zenodo.org/record/1037091/files/dudesdb_arc-bac_refseq-cg_201709.tar.gz |
 | Fungal + Viral - RefSeq Complete Genomes | 2017-09 | 9.5 GB | https://zenodo.org/record/1037288/files/dudesdb_fun-vir_refseq-cg_201709.tar.gz |
 
-- Unpack:
+Unpack:
 	
 	tar zxfv dudesdb_arc-bac_refseq-cg_201709.tar.gz
 
-- Map your reads (fastq) with bowtie2 (any other mapper/index can be used - check `-i` parameter on DUDes.py):
+Map your reads (fastq) with bowtie2 (any other mapper/index can be used - check `-i` parameter on DUDes.py):
 	
 	bowtie2 -x dudesdb_arc-bac_refseq-cg_201709/arc-bac_refseq-cg_201709 --no-unal --very-fast -k 10 -1 reads.1.fq -2 reads.2.fq -S mapping_output.sam
 
-- Run DUDes:
-	
+Run DUDes
+
 	DUDes.py -s mapping_output.sam -d dudesdb_arc-bac_refseq-cg_201709/arc-bac_refseq-cg_201709.npz -o output_prefix
 
 Example with sample data:
@@ -73,21 +73,21 @@ Create a dudes database based on the same set of references:
 
 	[python3] DUDesDB.py -m 'av' -f references.fasta -n nodes.dmp -a names.dmp -g nucl_gb.accession2taxid -t 12 -o custom_db
 	
-- Choose the parameter `-m` considering the format of the headers in your reference sequences:
+Choose the parameter `-m` considering the format of the headers in your reference sequences:
 
-		New NCBI header [>NC_009925.1 Acaryochloris marina MBIC11017, complete genome.]
-			-m 'av'
-		Old NCBI header [>gi|158333233|ref|NC_009925.1| Acaryochloris marina MBIC11017, complete genome.]
-			-m 'gi'
+	New NCBI header [>NC_009925.1 Acaryochloris marina MBIC11017, complete genome.]
+		-m 'av'
+	Old NCBI header [>gi|158333233|ref|NC_009925.1| Acaryochloris marina MBIC11017, complete genome.]
+		-m 'gi'
 
-- `nodes.dmp` and `names.dmp` can be obtained from:
+`nodes.dmp` and `names.dmp` can be obtained from:
 	
-		ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz
+	ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz
 		
-- `nucl_gb.accession2taxid`, `nucl_wgs.accession2taxid` or `gi_taxid_nucl.dmp.gz`(depending on your reference origin) can be obtained from:
+`nucl_gb.accession2taxid`, `nucl_wgs.accession2taxid` or `gi_taxid_nucl.dmp.gz`(depending on your reference origin) can be obtained from:
 		
-		ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/nucl_XX.accession2taxid
-		ftp://ftp.ncbi.nih.gov/pub/taxonomy/gi_taxid_nucl.dmp.gz
+	ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/nucl_XX.accession2taxid
+	ftp://ftp.ncbi.nih.gov/pub/taxonomy/gi_taxid_nucl.dmp.gz
 
 Details:
 --------
