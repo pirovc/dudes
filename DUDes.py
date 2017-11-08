@@ -28,20 +28,20 @@ np.set_printoptions(threshold=10000,suppress=True,formatter={'float': '{: 0.6f}'
 import argparse, time, shelve
 import multiprocessing as mp
 from collections import defaultdict
-from parse_sam import parse_sam
-from Util import *
-from SMap import SMap
-from Refs import Refs
-from TTree import TTree
-from Ident import Ident
-from Rep import Rep
-from Bins import Bins
-from Names import Names
-from Ranks import Ranks
+from dudes.parse_sam import parse_sam
+from dudes.Util import *
+from dudes.SMap import SMap
+from dudes.Refs import Refs
+from dudes.TTree import TTree
+from dudes.Ident import Ident
+from dudes.Rep import Rep
+from dudes.Bins import Bins
+from dudes.Names import Names
+from dudes.Ranks import Ranks
 
 def main():
 	
-	version = 'v0.07'
+	version = 'v0.08'
 	
 	total_tx = time.time()
 	
@@ -58,7 +58,7 @@ def main():
 	global min_group_size
 	global bin_size
 
-	parser = argparse.ArgumentParser(prog='DUDes')
+	parser = argparse.ArgumentParser(prog='DUDes.py')
 	parser.add_argument('-s',required=True, metavar='<sam_file>', dest="sam_file", help="Alignment/mapping file in SAM format. DUDes does not depend on any specific read mapper, but it requires header information (@SQ SN:gi|556555098|ref|NC_022650.1| LN:55956) and mismatch information (check -i)")
 	parser.add_argument('-d',required=True, metavar='<database_file>', dest="database_file", help="Database file (output from DUDesDB [.npz])")
 	parser.add_argument('-i', metavar='<sam_format>', dest="sam_format", default="nm", help="SAM file format ['nm': sam file with standard cigar string plus NM flag (NM:i:[0-9]*) for mismatches count | 'ex': just the extended cigar string]. Default: 'nm'")
@@ -506,31 +506,7 @@ def perm_pval(c,t):
 		diff_random[n] = np.mean(combined[:norm_c_sub.size]) - np.mean(combined[norm_c_sub.size:])
 
 	pv = sum(np.greater_equal(diff_random,diff_obs)) / float(permutations)			
-	
-	# ## plots
-	# if plot:
-		# import matplotlib.pyplot as plt
-		# fig, ax = plt.subplots(nrows=1, ncols=2, sharex=False, sharey=False)
-		# ax[0].plot(norm_c,lw=2.5,color='blue',label='Y')
-		# ax[0].plot(norm_t,lw=2.5,color='red',label='X')
-		# ax[0].legend(fontsize=20)
-		# ax[0].axvline(cutoff-1, color='black', lw=3)
-		# #ax[0].text(cutoff-1+5, 100, int(cutoff), fontsize=20)
-		# #ax[0].set_xticks([]) 
-		# ax[0].set_yticks([]) 
-		# ax[0].set_xlabel('bins', fontsize=20)
-		# ax[0].set_ylabel('bin score', fontsize=20)
-		# ax[1].hist(diff_random,50,alpha=0.8,color='gray')
-		# ax[1].axvline(diff_obs, color='green', lw=3)
-		# ax[1].axvline(1-np.percentile(diff_random,cv), color='red', lw=3, ls="--")
-		# ax[1].set_xticks([]) 
-		# ax[1].set_yticks([]) 
-		# xlim = ax[1].get_xlim()
-		# ax[1].set_xlim(xlim[0]-100,xlim[1]+100)
-		# plt.tight_layout()
-		# plt.show()
-	# ## plots
-	
+
 	return pv
 	
 	
@@ -562,18 +538,6 @@ def findIndirectMatches(smap,direct_matches_smap_idx):
 
 	return indirect_matches_smap_idx
 
-#def findIndirectMatches2(smap,direct_matches_smap_idx):
-#	## Get best match from the direct matches (because sometimes the same read can match several references)
-#	direct_matches = smap.getSubSet(direct_matches_smap_idx)
-#	order_dm,index_dm = group_max(direct_matches.getCol('ReadID'),direct_matches.getCol('MatchScore'))
-#	max_match_score_direct_matches = defaultdict(np.int,zip(np.unique(direct_matches.getCol('ReadID')),direct_matches.getSubSet(order_dm).getSubSet(index_dm).getCol('MatchScore')))
-#	## Compare match scores agains an
-#	## array of max match scores for each readid (0 when read is not being analyzed) from previous calculation
-#	## Use smap.smap directly for performance (instead of smap.getCol())
-#	indirect_matches_smap_idx = np.less_equal(smap.smap[:,2],[max_match_score_direct_matches[readid] for readid in smap.smap[:,3]])	
-#	# Return indirect matches, ignoring the direct matches
-#	return np.logical_and(indirect_matches_smap_idx,~direct_matches_smap_idx)
-	
 def filterRefTax(smap,refs,ttree):
 	
 	# References marked with -1 are the ones not found in the refids_lookup (on parse_sam)

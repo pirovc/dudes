@@ -25,26 +25,26 @@
 
 import numpy as np
 import argparse, subprocess
-from Ranks import Ranks
-from parse_names import parse_names
+from dudes.Ranks import Ranks
+from dudes.parse_names import parse_names
 from collections import defaultdict
 import multiprocessing as mp
 import time, sys
-import shelve
+import pandas as pd
 
 def main():
 	
-	version = 'v0.07'
+	version = 'v0.08'
 	
 	total_tx = time.time()
 	
 	global nodes
 		
-	parser = argparse.ArgumentParser(description='DUDesDB')
-	parser.add_argument('-m', metavar='<reference_mode>', dest="reference_mode", default="gi", help="'gi' uses the GI as the identifier (For headers like: >gi|158333233|ref|NC_009925.1|) [NCBI is phasing out sequence GI numbers in September 2016]. 'av' uses the accession.version as the identifier (for headers like: >NC_013791.2).	Default: 'gi'")
-	parser.add_argument('-f', required=True, metavar='<fasta_file>', dest="fasta_file", help="Reference fasta file for header extraction [only]. Should be the same file used to generate the index database for the SAM file. Each sequence header should contain a identifier as defined in the reference mode.")
+	parser = argparse.ArgumentParser(prog='DUDesDB.py')
+	parser.add_argument('-m', metavar='<reference_mode>', dest="reference_mode", default="av", help="'gi' uses the GI as the identifier (For headers like: >gi|158333233|ref|NC_009925.1|) [NCBI is phasing out sequence GI numbers in September 2016]. 'av' uses the accession.version as the identifier (for headers like: >NC_013791.2).	Default: 'av'")
+	parser.add_argument('-f', required=True, metavar='<fasta_files>', dest="fasta_files", nargs="*", help="Reference fasta file(s) for header extraction only, plain or gzipped -  the same file used to generate the read mapping index. Each sequence header '>' should contain a identifier as defined in the reference mode.")
+	parser.add_argument('-g', required=True, metavar='<ref2tax_files>', dest="ref2tax_files", nargs="*", help="reference id to taxid file(s): 'gi_taxid_nucl.dmp[.gz]' --> 'gi' mode, '*.accession2taxid[.gz]' --> 'av' mode [from NCBI taxonomy database ftp://ftp.ncbi.nih.gov/pub/taxonomy/]")
 	parser.add_argument('-n', required=True, metavar='<nodes_file>', dest="nodes_file", help="nodes.dmp file [from NCBI taxonomy database ftp://ftp.ncbi.nih.gov/pub/taxonomy/]")
-	parser.add_argument('-g', required=True, metavar='<ref2tax_file>', dest="ref2tax_file", help="Reference identifier (GI or accesion.version) to taxonomic ID file: 'gi_taxid_nucl.dmp' --> 'gi' mode, 'accession2taxid/nucl_gb.dump' --> 'av' mode [from NCBI taxonomy database ftp://ftp.ncbi.nih.gov/pub/taxonomy/]")
 	parser.add_argument('-a', metavar='<names_file>', dest="names_file", help="names.dmp file [from NCBI taxonomy database ftp://ftp.ncbi.nih.gov/pub/taxonomy/]")
 	parser.add_argument('-o', metavar='<output_prefix>', dest="output_prefix", default="dudesdb", help="Output prefix. Default: dudesdb")
 	parser.add_argument('-t', metavar='<threads>', dest="threads", type=int, default=1, help="# of threads. Default: 1")
@@ -60,17 +60,17 @@ def main():
 	
 	# Load reference identifiers from fasta file (in a set for fast lookup)
 	# refids = [identifier]
-	sys.stdout.write("Extracting reference identifiers (%s) ..." % args.fasta_file)
+	sys.stdout.write("Extracting reference identifiers (%s) ..." % ",".join(args.fasta_files))
 	tx = time.time()
-	try: # LINUX - faster
+	try: # shell - faster
 		if args.reference_mode=="gi":
-			cmd = 'grep -o "gi|[0-9]*" ' + args.fasta_file + ' | sed "s/gi|//g"'
+			cmd = 'zgrep -h -o "^>gi|[0-9]*" ' + " ".join(args.fasta_files) + ' | sed "s/>gi|//g"'
 		else:
-			cmd = 'grep -o ">[A-Z0-9_\.]*" ' + args.fasta_file + ' | sed "s/>//g"'
+			cmd = 'zgrep -h -o "^>[A-Z0-9_\.]*" ' + " ".join(args.fasta_files) + ' | sed "s/>//g"'
 		out = subprocess.getoutput(cmd)
 		refids = set(l for l in out.split('\n') if l)
-	except: # general
-		import re
+	except: # python
+		import re, gzip
 		if args.reference_mode=="gi":
 			regex = re.compile('gi\|[0-9]*')
 			slice = 3
@@ -78,16 +78,20 @@ def main():
 			regex = re.compile('>[A-Z0-9_\.]*')
 			slice = 1	
 		refids = set()
-		for f in open(args.fasta_file,'r'):
-			if f[0]==">":
-				r = regex.search(f)
-				if r: 
-					if len(r.group())>1: refids.add(r.group()[slice:])
-	sys.stdout.write(" Done. Elapsed time: " + str(time.time() - tx) + " seconds\n")
-	
+		for file in args.fasta_files:
+			f = gzip.open(file, 'rt') if file.endswith(".gz") else open(file,'r')
+			for line in f:
+				if line[0]==">":
+					r = regex.search(line)
+					if r: 
+						if len(r.group())>1: refids.add(r.group()[slice:])
+
 	if not refids:
-		print("No references found. Check the reference mode (-m) and the patter from your fasta file")
+		print("\n\tNo references found. Check the reference mode (-m) and your reference headers.")
 		return
+	else:
+		print("\n\t%d unique references found" % len(refids))
+	sys.stdout.write("Done. Elapsed time: " + str(time.time() - tx) + " seconds\n")
 		
 	# Load nodes.dmp
 	# nodes = [taxid,parent_taxid,rankid]
@@ -101,47 +105,61 @@ def main():
 			nodes.append([int(fields[0]),int(fields[1]),ranks[fields[2]]])
 	nodes = np.array(nodes)
 	sys.stdout.write(" Done. Elapsed time: " + str(time.time() - tx) + " seconds\n")
-	
+
 	# Load refid 2 taxid file
 	# Verify if the entry is being used in the refids before and just output relevant rows
 	# refid_taxid = [refid,taxid]
-	sys.stdout.write("Loading taxids (%s) ..." % args.ref2tax_file)
+	sys.stdout.write("Loading taxids (%s) ..." % ",".join(args.ref2tax_files))
 	tx = time.time()
 	refids_lookup = defaultdict(lambda: len(refids_lookup)) #Auto-increase id dict
-	try: # pandas - faster
-		import pandas as pd
-		if args.reference_mode=="gi":
-			refid_taxid = np.array(pd.read_csv(args.ref2tax_file, sep='\t', header=None, dtype=int, converters={0:lambda x: refids_lookup[x] if x in refids else np.nan}).dropna(how='any'),dtype=int)
-		else:
-			refid_taxid = np.array(pd.read_csv(args.ref2tax_file, sep='\t', header=None, skiprows=1, usecols=[1,2], converters={1:lambda x: refids_lookup[x] if x in refids else np.nan}).dropna(how='any'),dtype=int)
-	except: # general
-		refid_taxid = []
-		if args.reference_mode=="gi":
-			for f in open(args.ref2tax_file):
-				fields = f.split('\t')
-				if fields[0] in refids:
-					refid_taxid.append([refids_lookup[fields[0]],int(fields[0])])
-		else:
-			with open(args.ref2tax_file,"r") as file:
-				next(file)
-				for f in file:
-					fields = f.split('\t')
-					if fields[1] in refids:
-						refid_taxid.append([refids_lookup[fields[1]],int(fields[2])])
-		refid_taxid = np.array(refid_taxid,dtype=int)
+	refid_taxid = []
+	if args.reference_mode=="gi":
+		for file in args.ref2tax_files:
+			refid_taxid.append(np.array(pd.read_csv(file, compression='gzip' if file.endswith(".gz") else None, sep='\t', header=None, dtype=int, converters={0:lambda x: refids_lookup[x] if x in refids else np.nan}).dropna(how='any'),dtype=int))
+	else:
+		for file in args.ref2tax_files:
+			refid_taxid.append(np.array(pd.read_csv(file, compression='gzip' if file.endswith(".gz") else None, sep='\t', header=None, skiprows=1, usecols=[1,2], converters={1:lambda x: refids_lookup[x] if x in refids else np.nan}).dropna(how='any'),dtype=int))
+	# Concatenate files together
+	refid_taxid = np.concatenate(refid_taxid, axis=0)
 	sys.stdout.write(" Done. Elapsed time: " + str(time.time() - tx) + " seconds\n")
 	
 	# Output differences and verify the taxids on nodes file
 	sys.stdout.write("Parsing nodes and taxids ...")
 	tx = time.time()
-	unique_refs_used = np.unique(refid_taxid[:,0]).size
-	sys.stdout.write("\n\t%d references without entries on %s" % ((len(refids) - unique_refs_used,args.ref2tax_file)))
-	#print(np.setdiff1d(refids,refids_lookup.keys()))
-	sub_refid_taxid = refid_taxid[np.in1d(refid_taxid[:,1],nodes[:,0])]
-	sys.stdout.write("\n\t%d references without entries on %s\n" % (unique_refs_used - sub_refid_taxid[:,0].size,args.nodes_file))
-	#print(refid_taxid[~np.in1d(refid_taxid[:,1],nodes[:,0])])
-	sys.stdout.write(" Done. Elapsed time: " + str(time.time() - tx) + " seconds\n")
+	unique_refs_used = np.unique(refid_taxid[:,0]).size # found on the ref2tax files - should be already unique, just to make sure
+	if not unique_refs_used:
+		print("\n\tNo matches on taxonomy found. Check your reference to taxonomy file[s] (-g): ", ",".join(args.ref2tax_files))
+		return
 	
+	seq_without_refid = len(refids) - unique_refs_used
+	sys.stdout.write("\n\tIgnoring %d (out of %d) sequences without entries on %s\n" % ((seq_without_refid, len(refids), ",".join(args.ref2tax_files))))
+	if seq_without_refid: 
+		refids_nparr = np.array(list(refids))
+		print("\n".join(refids_nparr[~np.in1d(refids_nparr, list(refids_lookup.keys()))]))
+		del refids_nparr
+		
+	refid_with_valid_taxid = np.in1d(refid_taxid[:,1],nodes[:,0])
+	seq_without_taxid = unique_refs_used - sum(refid_with_valid_taxid)
+	sys.stdout.write("\tIgnoring %d (out of %d) sequences without taxid on %s\n" % (seq_without_taxid, unique_refs_used, args.nodes_file))
+	if seq_without_taxid:
+		refids_lookup_rev = {v: k for k, v in refids_lookup.items()}
+		print("\n".join([refids_lookup_rev[r] + "\t" + str(t) for r,t in refid_taxid[~refid_with_valid_taxid]]))
+
+		# filter from lookup (rev) and overwrite current lookup
+		for r in refid_taxid[~refid_with_valid_taxid,0]:
+			del refids_lookup_rev[r]
+		refids_lookup = {v: k for k, v in refids_lookup_rev.items()}
+		del refids_lookup_rev
+		# filter out entries without taxid matches on nodes.dmp
+		refid_taxid = refid_taxid[refid_with_valid_taxid]
+		
+	sys.stdout.write("Done. Elapsed time: " + str(time.time() - tx) + " seconds\n")
+	
+	unique_refs_used_filtered = np.unique(refid_taxid[:,0]).size
+	if not unique_refs_used_filtered:
+		print("\n\tNo matches on nodes found. Check your file (-n): ", args.nodes_file)
+		return
+		
 	# ------- MakeDB -----------
 	sys.stdout.write("Creating database ...")
 	tx = time.time()
@@ -157,7 +175,7 @@ def main():
 	pool = mp.Pool(args.threads)
 	paths = defaultdict(list)
 	res = {}
-	for taxid in np.unique(sub_refid_taxid[:,1]):
+	for taxid in np.unique(refid_taxid[:,1]):
 		res[taxid] = pool.apply_async(generatePath,args=(taxid,fixed_ranks_id,))
 	for taxid,r in res.items():
 		paths[taxid] = r.get()
@@ -167,7 +185,7 @@ def main():
 	no_rank_id = fixed_ranks.index('strain')
 	refid_nodes = []
 	res = []
-	for refid,taxid in sub_refid_taxid: 
+	for refid,taxid in refid_taxid: 
 		res.append(pool.apply_async(generateDB,args=(paths[taxid],refid,no_rank_after,no_rank_id,)))
 	for r in res:
 		refid_nodes.extend(r.get())

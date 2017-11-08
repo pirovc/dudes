@@ -1,7 +1,7 @@
 import numpy as np
 from collections import Counter, defaultdict
-from Ranks import Ranks
-from Util import *
+from dudes.Ranks import Ranks
+from dudes.Util import *
 
 class Ident:
 	columns = ['Iter','TaxID','ParentTaxID','RankID','CumulativeMatches','MatchScoreSum','Abundance','CumulativeAbundance']

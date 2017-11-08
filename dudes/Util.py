@@ -1,4 +1,4 @@
-from Ranks import Ranks
+from dudes.Ranks import Ranks
 import numpy as np
 import sys
 
