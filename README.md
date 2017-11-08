@@ -8,8 +8,7 @@ Piro, V. C., Lindner, M. S., & Renard, B. Y. (2016). DUDes: a top-down taxonomic
 
 Requirements:
 -------------
-python3, numpy and pandas (for DUDesDB.py only)
-
+python3 and numpy (DUDes.py) and pandas (DUDesDB.py only)
 
 Install:
 --------
@@ -179,7 +178,8 @@ Change log:
 -----------
 
 2017-11-08 (v0.08):
-- but fixes on DUDesDB and multiple gzipped file for ref2tax_files
+- bug fixes on DUDesDB and multiple gzipped file suppport for fasta_files and ref2tax_files
+- distutils installation
 
 2016-11-03 (v0.07):
 - code changed to python 3
