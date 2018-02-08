@@ -12,12 +12,16 @@ def parse_lines(lines):
 	c = 0
 	for l in lines:
 		fields = l.split('\t')
-		if fields[2]!="*":
+		if fields[2]!="*" and not int(fields[1]) & 4 : #bitwise operation (read unmapped (0x4))
 			cig = {'I':0,'D':0,'M':0}
 			for val,ci in re.findall('(\d+)([IDM])',fields[5]): cig[ci] += int(val)
 			sam[c,0] = refids_lookup.get(refid_regex.search(fields[2]).group()[slice:],-1) # refid code from lookup (gi or av) or -1
 			sam[c,1] = int(fields[3]) # POS
-			sam[c,2] = (cig['M'] + cig['I']) - (int(nm_regex.search(l).group()[5:]) + cig['D'] + cig['I']) #MATCHES -> LEN - (NM + INDELS)
+			try:
+			    nm = int(nm_regex.search(l).group()[5:])
+			except:
+			    nm = 0
+			sam[c,2] = (cig['M'] + cig['I']) - (nm + cig['D'] + cig['I']) #MATCHES -> LEN - (NM + INDELS)
 			reads.append(fields[0])
 			c = c + 1
 	return sam[:c,:],reads
@@ -75,9 +79,9 @@ def parse_sam(sam_file,sam_format,rl,reference_mode,threads):
 	res = []	
 	
 	# Check for NM flag
-	if sam_format=="nm" and not nm_regex.search(first_aln_line):
-		print("\n -- Warning: NM flag not found. Switching to extended CIGAR mode (-i 'ex')")
-		sam_format = "ex"
+	# if sam_format=="nm" and not nm_regex.search(first_aln_line):
+	# 	print("\n -- Warning: NM flag not found. Switching to extended CIGAR mode (-i 'ex')")
+	# 	sam_format = "ex"
 	
 	if sam_format=="nm":
 		while True:		
