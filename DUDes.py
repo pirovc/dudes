@@ -41,7 +41,7 @@ from dudes.Ranks import Ranks
 
 def main():
 	
-	version = 'v0.08'
+	version = 'v0.09'
 	
 	total_tx = time.time()
 	
@@ -61,7 +61,8 @@ def main():
 	parser = argparse.ArgumentParser(prog='DUDes.py')
 	parser.add_argument('-s',required=True, metavar='<sam_file>', dest="sam_file", help="Alignment/mapping file in SAM format. DUDes does not depend on any specific read mapper, but it requires header information (@SQ SN:gi|556555098|ref|NC_022650.1| LN:55956) and mismatch information (check -i)")
 	parser.add_argument('-d',required=True, metavar='<database_file>', dest="database_file", help="Database file (output from DUDesDB [.npz])")
-	parser.add_argument('-i', metavar='<sam_format>', dest="sam_format", default="nm", help="SAM file format ['nm': sam file with standard cigar string plus NM flag (NM:i:[0-9]*) for mismatches count | 'ex': just the extended cigar string]. Default: 'nm'")
+	parser.add_argument('-i', metavar='<sam_format>', dest="sam_format", default="nm", help="SAM file format to extract sequence length and edit distance ['nm': use standard cigar string and the NM optional field (NM:i:[0-9]+) | 'ex': use the extended cigar string ((\d+)([IDM=XS]))]. Default: 'nm'")
+	parser.add_argument('--sec_aln', dest="sec_aln", default=False, action='store_true', help="Look for secondary alignments on the optional SAM fields (XA:Z:[^\\t]+) e.g. XA:Z:NC_010364.1,1119958,1120108,-,3;NZ_CP011246.1,1191943,1192093,+,2;")
 	parser.add_argument('-t', metavar='<threads>', dest="threads", type=int, default=1, help="# of threads. Default: 1")
 	parser.add_argument('-x', metavar='<taxid_start>', dest="taxid_start", type=int, default=1, help="Taxonomic Id used to start the analysis (1 = root). Default: 1")
 	parser.add_argument('-m', metavar='<max_read_matches>', dest="max_read_matches", type=float, default=0, help="Keep reads up to this number/percentile of matches (0: off / 0-1: percentile / >=1: match count). Default: 0")
@@ -126,7 +127,7 @@ def main():
 	# Load sam file
 	sys.stdout.write("Loading sam file ...")
 	tx = time.time()
-	sam,ref = parse_sam(args.sam_file,args.sam_format,refids_lookup,reference_mode,threads)
+	sam,ref = parse_sam(args.sam_file, args.sam_format, args.sec_aln, refids_lookup, reference_mode, threads)
 	sys.stdout.write(" Done. Elapsed time: " + str(time.time() - tx) + " seconds\n")
 
 	# Create objects
