@@ -113,7 +113,7 @@ def main():
 	# Load database file
 	sys.stdout.write("Loading database file ...")
 	tx = time.time()
-	npzfile = np.load(args.database_file)
+	npzfile = np.load(args.database_file, allow_pickle=True)
 	reference_mode = npzfile["reference_mode"].item()
 	tax = np.array(npzfile["refid_nodes"])
 	refids_lookup = npzfile["refids_lookup"].item()
