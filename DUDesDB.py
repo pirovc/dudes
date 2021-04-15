@@ -97,11 +97,13 @@ def main():
 	# nodes = [taxid,parent_taxid,rankid]
 	sys.stdout.write("Loading nodes (%s) ..." % args.nodes_file)
 	tx = time.time()
+	# ranks: key: rank name, value: unique ID
 	ranks = defaultdict(lambda: len(ranks))
 	nodes = [] 
 	with open(args.nodes_file,'r') as fnodes:
 		for line in fnodes:
 			fields = line.split('\t|\t',3)
+			#            taxid           parent_taxid,  rank name
 			nodes.append([int(fields[0]),int(fields[1]),ranks[fields[2]]])
 	nodes = np.array(nodes)
 	sys.stdout.write(" Done. Elapsed time: " + str(time.time() - tx) + " seconds\n")
@@ -115,7 +117,11 @@ def main():
 	refid_taxid = []
 	if args.reference_mode=="gi":
 		for file in args.ref2tax_files:
-			refid_taxid.append(np.array(pd.read_csv(file, compression='gzip' if file.endswith(".gz") else None, sep='\t', header=None, dtype=int, converters={0:lambda x: refids_lookup[x] if x in refids else np.nan}).dropna(how='any'),dtype=int))
+			refid_taxid.append(np.array(pd.read_csv(
+				file, compression='gzip' if file.endswith(".gz") else None, sep='\t',
+				header=None, dtype=int,
+				converters={0:lambda x: refids_lookup[x] if x in refids else np.nan}
+			).dropna(how='any'),dtype=int))
 	else:
 		for file in args.ref2tax_files:
 			refid_taxid.append(np.array(pd.read_csv(file, compression='gzip' if file.endswith(".gz") else None, sep='\t', header=None, skiprows=1, usecols=[1,2], converters={1:lambda x: refids_lookup[x] if x in refids else np.nan}).dropna(how='any'),dtype=int))
@@ -137,7 +143,7 @@ def main():
 		refids_nparr = np.array(list(refids))
 		print("\n".join(refids_nparr[~np.in1d(refids_nparr, list(refids_lookup.keys()))]))
 		del refids_nparr
-		
+	# 												  taxids from nodes file
 	refid_with_valid_taxid = np.in1d(refid_taxid[:,1],nodes[:,0])
 	seq_without_taxid = unique_refs_used - sum(refid_with_valid_taxid)
 	sys.stdout.write("\tIgnoring %d (out of %d) sequences without taxid on %s\n" % (seq_without_taxid, unique_refs_used, args.nodes_file))
@@ -171,7 +177,7 @@ def main():
 		else:
 			fixed_ranks_id[ranks[r]] = i
 
-	# Generate all possible paths
+	# Generate all possible taxonomy paths
 	pool = mp.Pool(args.threads)
 	paths = defaultdict(list)
 	res = {}
@@ -210,28 +216,54 @@ def main():
 	sys.stdout.write(" Done. Elapsed time: " + str(time.time() - tx) + " seconds\n")
 	
 	sys.stdout.write("\nTotal elapsed time: " + str(time.time() - total_tx) + " seconds\n")
-	
+
+
 def generateDB(ptx,refid,no_rank_after,no_rank_id):
+	"""
+	generate database for a single path
+
+	:param ptx: lineage of refid, list of tuples, each tuple is a pair of taxid and it's index in fixed ranks, list is
+	sorted from child to parent
+	:param refid: id of reference accession
+	:param no_rank_after: index id of most specific rank name in fixed ranks, after which the next rank is assigned
+	"no rank" in taxonomy nodes dmp
+	:param no_rank_id: index id of rank name "no rank" in fixed ranks
+	:return: list of lists, one list per lineage taxid, ordered from parent to child,
+	each list contains: query reference id, taxid from ptx, parent taxid of taxid from ptx, sum of rankid and count of
+	no rank ids in the parent taxons between current taxid and taxid of no_rank_after id.
+	occurrences of no_rank_id in the path before no_rank_after are skipped
+	"""
 	refid_no = []
 	parent_taxid = 1
-	no_rank = False
+	allow_no_rank = False
 	no_rank_count = 0
 	for taxid,rankid in ptx[::-1]:
-		if (no_rank==False and rankid!=no_rank_id) or no_rank: 
+		if (allow_no_rank==False and rankid!=no_rank_id) or allow_no_rank:
 			refid_no.append([refid,taxid,parent_taxid,rankid+no_rank_count])
 			parent_taxid = taxid
-			if rankid==no_rank_after: no_rank = True # Only allow no_rank (strain) after some certain rank
-			if rankid==no_rank_id: no_rank_count += 1
+			if rankid==no_rank_after: allow_no_rank = True # Only allow no_rank (strain) after some certain rank
+			if rankid==no_rank_id: no_rank_count += 1 # only reachable after no_rank_after was reached
 	return refid_no
-	
-def generatePath(taxid,fixed_ranks_id):
+
+
+def generatePath(taxid, fixed_ranks_id):
+	"""
+	generate the lineage path of taxids, only return taxids of fixed ranks.
+
+	:param taxid: query taxid
+	:param fixed_ranks_id: dict, key: id of first rank name occurrence rank in nodes_file, value: rank position in
+	fixed ranks
+	:return: list of tuples, each tuple is a pair of taxid and it's fixed rank index, list is sorted from child to
+	parent
+	"""
 	path = []
 	while taxid!=1:
-		taxid, parent_taxid, rankid = nodes[nodes[:,0]==taxid,[0,1,2]]
+		taxid, parent_taxid, rankid = nodes[nodes[:,0]==taxid, [0,1,2]]
 		if rankid in list(fixed_ranks_id.keys()):
 			path.append((taxid,fixed_ranks_id[rankid])) #use the rankid from fixed ranks
 		taxid = parent_taxid
 	return path
-	
+
+
 if __name__ == "__main__":
 	main()

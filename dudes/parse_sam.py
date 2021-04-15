@@ -64,7 +64,12 @@ def parse_sam(sam_file,sam_format,rl,reference_mode,threads):
 		l = file.readline()
 		fields = l.split('\t')
 		if fields[0]=='@SQ': # list of references on the database
-			refs.append([refids_lookup.get(refid_regex.search(fields[1][3:]).group()[slice:],-1),int(fields[2][3:])])
+			# example fields:
+			# 0: @SQ
+			# 1: SN:NC_010571.1
+			# 2: LN:5957605
+			# refs: list of lists, each sublist is a pair of refids_lookup.get(accession) and LN attribute
+			refs.append([refids_lookup.get(refid_regex.search(fields[1][3:]).group()[slice:], -1), int(fields[2][3:])])
 		elif l[0]=='@': continue # other headers
 		else: 
 			first_aln_line = l

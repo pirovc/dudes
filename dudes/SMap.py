@@ -7,6 +7,11 @@ class SMap:
 	def getSize(self):
 		return self.smap.shape[0]
 	def getCol(self,col):
+		"""
+		get column by column name
+		:param col: str, valid values: ['RefID','MatchPosStart','MatchScore','ReadID']
+		:return: single column init data
+		"""
 		return self.smap[:,self.cols[col]]
 	def getSubSet(self,ind):
 		return SMap(self.smap[ind])
