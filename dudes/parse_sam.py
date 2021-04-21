@@ -68,7 +68,9 @@ def parse_sam(sam_file,sam_format,rl,reference_mode,threads):
 			# 0: @SQ
 			# 1: SN:NC_010571.1
 			# 2: LN:5957605
-			# refs: list of lists, each sublist is a pair of refids_lookup.get(accession) and LN attribute
+			# refs: list of lists, each sublist is a pair of
+			# 1. refids_lookup.get(accession)->dudes internal id for the reference accession
+			# 2. LN attribute
 			refs.append([refids_lookup.get(refid_regex.search(fields[1][3:]).group()[slice:], -1), int(fields[2][3:])])
 		elif l[0]=='@': continue # other headers
 		else: 
