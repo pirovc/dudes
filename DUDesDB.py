@@ -258,21 +258,21 @@ def get_reference_identifiers(fasta_files, ref_mode):
     tx = time.time()
     # try:  # shell - faster
     if ref_mode == "gi":
-        cmd = 'zgrep -h -o "^>gi|[0-9]*" ' + " ".join(fasta_files) + ' | sed "s/>gi|//g"'
+        cmd = r'zgrep -h -o "^>gi|[0-9]*" ' + " ".join(fasta_files) + ' | sed "s/>gi|//g"'
     elif ref_mode == "av":
-        cmd = 'zgrep -h -o "^>[A-Z0-9_\.]*" ' + " ".join(fasta_files) + ' | sed "s/>//g"'
+        cmd = r'zgrep -h -o "^>[A-Z0-9_\.]*" ' + " ".join(fasta_files) + ' | sed "s/>//g"'
     elif ref_mode == "up":
-        cmd = 'zgrep -hoE "^>..\|[^|\s]+" ' + " ".join(fasta_files) + ' | sed "s/>..|//g"'
+        cmd = r'zgrep -hoE "^>..\|[^|\s]+" ' + " ".join(fasta_files) + ' | sed "s/>..|//g"'
     return_code, out = subprocess.getstatusoutput("set -o pipefail; " + cmd)
     if return_code == 0:
         refids = set(l for l in out.split('\n') if l)
     else:    # python
         import re, gzip
         if ref_mode == "gi":
-            regex = re.compile('gi\|[0-9]*')
+            regex = re.compile(r'gi\|[0-9]*')
             slice = 3
         elif ref_mode == "av":
-            regex = re.compile('>[A-Z0-9_\.]*')
+            regex = re.compile(r'>[A-Z0-9_\.]*')
             slice = 1
         elif ref_mode == "up":
             regex = re.compile(r'(?:sp|tr)\|[A-Z0-9_.]+')
