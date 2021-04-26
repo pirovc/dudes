@@ -1,0 +1,61 @@
+# Taxonomic Profiling Output
+@SampleID:sampledata/hiseq_accuracy_k60.sam
+@Version:0.9.3
+@Ranks:superkingdom|phylum|class|order|family|genus|species
+@TaxonomyID:sampledata/arc-bac_refseq-cg_201503.npz
+@@TAXID	RANK	TAXPATH	TAXPATHSN	PERCENTAGE
+2	superkingdom	2	Bacteria	100.000000
+1239	phylum	2|1239	Bacteria|Firmicutes	43.004190
+1224	phylum	2|1224	Bacteria|Proteobacteria	41.124560
+201174	phylum	2|201174	Bacteria|Actinobacteria	7.935760
+976	phylum	2|976	Bacteria|Bacteroidetes	7.935490
+91061	class	2|1239|91061	Bacteria|Firmicutes|Bacilli	43.004190
+1236	class	2|1224|1236	Bacteria|Proteobacteria|Gammaproteobacteria	35.256520
+1760	class	2|201174|1760	Bacteria|Actinobacteria|Actinobacteria	7.935760
+200643	class	2|976|200643	Bacteria|Bacteroidetes|Bacteroidia	7.935490
+28211	class	2|1224|28211	Bacteria|Proteobacteria|Alphaproteobacteria	5.868040
+1385	order	2|1239|91061|1385	Bacteria|Firmicutes|Bacilli|Bacillales	25.161370
+186826	order	2|1239|91061|186826	Bacteria|Firmicutes|Bacilli|Lactobacillales	17.842820
+135614	order	2|1224|1236|135614	Bacteria|Proteobacteria|Gammaproteobacteria|Xanthomonadales	16.457400
+135623	order	2|1224|1236|135623	Bacteria|Proteobacteria|Gammaproteobacteria|Vibrionales	12.472540
+2037	order	2|201174|1760|2037	Bacteria|Actinobacteria|Actinobacteria|Actinomycetales	7.935760
+171549	order	2|976|200643|171549	Bacteria|Bacteroidetes|Bacteroidia|Bacteroidales	7.935490
+135624	order	2|1224|1236|135624	Bacteria|Proteobacteria|Gammaproteobacteria|Aeromonadales	6.273720
+204455	order	2|1224|28211|204455	Bacteria|Proteobacteria|Alphaproteobacteria|Rhodobacterales	5.868040
+91347	order	2|1224|1236|91347	Bacteria|Proteobacteria|Gammaproteobacteria|Enterobacteriales	0.049050
+1300	family	2|1239|91061|186826|1300	Bacteria|Firmicutes|Bacilli|Lactobacillales|Streptococcaceae	17.842820
+32033	family	2|1224|1236|135614|32033	Bacteria|Proteobacteria|Gammaproteobacteria|Xanthomonadales|Xanthomonadaceae	16.457400
+90964	family	2|1239|91061|1385|90964	Bacteria|Firmicutes|Bacilli|Bacillales|Staphylococcaceae	15.853040
+641	family	2|1224|1236|135623|641	Bacteria|Proteobacteria|Gammaproteobacteria|Vibrionales|Vibrionaceae	12.472540
+186817	family	2|1239|91061|1385|186817	Bacteria|Firmicutes|Bacilli|Bacillales|Bacillaceae	9.308330
+1762	family	2|201174|1760|2037|1762	Bacteria|Actinobacteria|Actinobacteria|Actinomycetales|Mycobacteriaceae	7.935760
+815	family	2|976|200643|171549|815	Bacteria|Bacteroidetes|Bacteroidia|Bacteroidales|Bacteroidaceae	7.935490
+84642	family	2|1224|1236|135624|84642	Bacteria|Proteobacteria|Gammaproteobacteria|Aeromonadales|Aeromonadaceae	6.273720
+31989	family	2|1224|28211|204455|31989	Bacteria|Proteobacteria|Alphaproteobacteria|Rhodobacterales|Rhodobacteraceae	5.868040
+543	family	2|1224|1236|91347|543	Bacteria|Proteobacteria|Gammaproteobacteria|Enterobacteriales|Enterobacteriaceae	0.049050
+1301	genus	2|1239|91061|186826|1300|1301	Bacteria|Firmicutes|Bacilli|Lactobacillales|Streptococcaceae|Streptococcus	17.842820
+338	genus	2|1224|1236|135614|32033|338	Bacteria|Proteobacteria|Gammaproteobacteria|Xanthomonadales|Xanthomonadaceae|Xanthomonas	16.457400
+1279	genus	2|1239|91061|1385|90964|1279	Bacteria|Firmicutes|Bacilli|Bacillales|Staphylococcaceae|Staphylococcus	15.853040
+662	genus	2|1224|1236|135623|641|662	Bacteria|Proteobacteria|Gammaproteobacteria|Vibrionales|Vibrionaceae|Vibrio	12.472540
+1386	genus	2|1239|91061|1385|186817|1386	Bacteria|Firmicutes|Bacilli|Bacillales|Bacillaceae|Bacillus	9.308330
+1763	genus	2|201174|1760|2037|1762|1763	Bacteria|Actinobacteria|Actinobacteria|Actinomycetales|Mycobacteriaceae|Mycobacterium	7.935760
+816	genus	2|976|200643|171549|815|816	Bacteria|Bacteroidetes|Bacteroidia|Bacteroidales|Bacteroidaceae|Bacteroides	7.935490
+642	genus	2|1224|1236|135624|84642|642	Bacteria|Proteobacteria|Gammaproteobacteria|Aeromonadales|Aeromonadaceae|Aeromonas	6.273720
+1060	genus	2|1224|28211|204455|31989|1060	Bacteria|Proteobacteria|Alphaproteobacteria|Rhodobacterales|Rhodobacteraceae|Rhodobacter	5.868040
+561	genus	2|1224|1236|91347|543|561	Bacteria|Proteobacteria|Gammaproteobacteria|Enterobacteriales|Enterobacteriaceae|Escherichia	0.049050
+1313	species	2|1239|91061|186826|1300|1301|1313	Bacteria|Firmicutes|Bacilli|Lactobacillales|Streptococcaceae|Streptococcus|Streptococcus pneumoniae	17.842820
+1280	species	2|1239|91061|1385|90964|1279|1280	Bacteria|Firmicutes|Bacilli|Bacillales|Staphylococcaceae|Staphylococcus|Staphylococcus aureus	15.853040
+666	species	2|1224|1236|135623|641|662|666	Bacteria|Proteobacteria|Gammaproteobacteria|Vibrionales|Vibrionaceae|Vibrio|Vibrio cholerae	12.472540
+36809	species	2|201174|1760|2037|1762|1763|36809	Bacteria|Actinobacteria|Actinobacteria|Actinomycetales|Mycobacteriaceae|Mycobacterium|Mycobacterium abscessus	7.935760
+817	species	2|976|200643|171549|815|816|817	Bacteria|Bacteroidetes|Bacteroidia|Bacteroidales|Bacteroidaceae|Bacteroides|Bacteroides fragilis	7.935490
+644	species	2|1224|1236|135624|84642|642|644	Bacteria|Proteobacteria|Gammaproteobacteria|Aeromonadales|Aeromonadaceae|Aeromonas|Aeromonas hydrophila	6.273720
+1063	species	2|1224|28211|204455|31989|1060|1063	Bacteria|Proteobacteria|Alphaproteobacteria|Rhodobacterales|Rhodobacteraceae|Rhodobacter|Rhodobacter sphaeroides	5.868040
+346	species	2|1224|1236|135614|32033|338|346	Bacteria|Proteobacteria|Gammaproteobacteria|Xanthomonadales|Xanthomonadaceae|Xanthomonas|Xanthomonas citri	5.112770
+86662	species	2|1239|91061|1385|186817|1386|86662	Bacteria|Firmicutes|Bacilli|Bacillales|Bacillaceae|Bacillus|Bacillus weihenstephanensis	4.221770
+456327	species	2|1224|1236|135614|32033|338|456327	Bacteria|Proteobacteria|Gammaproteobacteria|Xanthomonadales|Xanthomonadaceae|Xanthomonas|Xanthomonas euvesicatoria	3.488430
+366648	species	2|1224|1236|135614|32033|338|366648	Bacteria|Proteobacteria|Gammaproteobacteria|Xanthomonadales|Xanthomonadaceae|Xanthomonas|Xanthomonas fuscans	3.424740
+366650	species	2|1224|1236|135614|32033|338|366650	Bacteria|Proteobacteria|Gammaproteobacteria|Xanthomonadales|Xanthomonadaceae|Xanthomonas|Xanthomonas alfalfae	3.201830
+1396	species	2|1239|91061|1385|186817|1386|1396	Bacteria|Firmicutes|Bacilli|Bacillales|Bacillaceae|Bacillus|Bacillus cereus	2.596010
+1428	species	2|1239|91061|1385|186817|1386|1428	Bacteria|Firmicutes|Bacilli|Bacillales|Bacillaceae|Bacillus|Bacillus thuringiensis	2.490550
+347	species	2|1224|1236|135614|32033|338|347	Bacteria|Proteobacteria|Gammaproteobacteria|Xanthomonadales|Xanthomonadaceae|Xanthomonas|Xanthomonas oryzae	1.229630
+562	species	2|1224|1236|91347|543|561|562	Bacteria|Proteobacteria|Gammaproteobacteria|Enterobacteriales|Enterobacteriaceae|Escherichia|Escherichia coli	0.049050

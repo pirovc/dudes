@@ -1,17 +1,7 @@
-import hashlib
 import numpy as np
-import os
 import subprocess
-from pathlib import Path
 from DUDesDB import load_refid2taxid_files, get_reference_identifiers
-
-RESSOURCE_DIR = Path(os.path.dirname(__file__)) / "ressource"
-DUDES_DIR = Path(os.path.dirname(__file__)).parent
-
-
-def md5sum(filename):
-    data = open(filename, 'rb').read()
-    return hashlib.md5(data).hexdigest()
+from test.helper_funcs import RESSOURCE_DIR, DUDES_DIR, md5sum
 
 
 def test_load_refid2taxid_files_up():
@@ -33,20 +23,16 @@ def test_get_reference_identifiers_uniprot():
     assert expected_accs == get_reference_identifiers(["test/ressource/uniprot_sprot-head.fasta"], "up")
 
 
-def test_DUDesDB(tmpdir):
-
-    print(RESSOURCE_DIR)
-    print(DUDES_DIR)
-    print(tmpdir)
-    produced_db = tmpdir/"dudesdb.npz"
-    expected_db = RESSOURCE_DIR/"dudesdb.npz"
+def test_DUDesDB(tmp_path):
+    produced_db = tmp_path / "dudesdb.npz"
+    expected_db = RESSOURCE_DIR / "dudesdb.npz"
     args = [DUDES_DIR / "DUDesDB.py",
             "-m", "up",
-            "-f", RESSOURCE_DIR/"uniprot_sprot-head.fasta",
-            "-g", RESSOURCE_DIR/"idmapping_selected-test.tab",
-            "-n", RESSOURCE_DIR/"nodes.dmp",
-            "-a", RESSOURCE_DIR/"names.dmp",
-            "-o", tmpdir/"dudesdb"]
+            "-f", RESSOURCE_DIR / "uniprot_sprot-head.fasta",
+            "-g", RESSOURCE_DIR / "idmapping_selected-test.tab",
+            "-n", RESSOURCE_DIR / "nodes.dmp",
+            "-a", RESSOURCE_DIR / "names.dmp",
+            "-o", tmp_path / "dudesdb"]
     subprocess.call(args)
     assert md5sum(produced_db) == md5sum(expected_db), \
         'wrong dudes database file produced'
