@@ -30,7 +30,7 @@ def test_get_length_of_reference_sequence():
 
 
 def test_get_peptide_start_pos_in_protein_sequence():
-    assert get_peptide_start_pos_in_protein_sequence("asd", "wasd") == 1
+    assert get_peptide_start_pos_in_protein_sequence("asd", "wasd") == 2
 
 
 def test_get_swissprot_accs_matching_uniparc_accs():

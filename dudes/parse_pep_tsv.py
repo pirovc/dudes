@@ -31,7 +31,7 @@ def get_length_of_reference_sequence(acc, fasta_obj):
 
 
 def get_peptide_start_pos_in_protein_sequence(peptide, protein):
-    return protein.index(peptide)
+    return protein.index(peptide) + 1
 
 
 def get_swissprot_accs_matching_uniparc_accs(uniparc_accs, idmapping_file):
