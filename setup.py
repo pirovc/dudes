@@ -10,6 +10,7 @@ setup(name='dudes',
       scripts=['DUDes.py', 'DUDesDB.py'],
       install_requires=[
           "numpy",
-          "pandas"
+          "pandas",
+          "pyfaidx"
       ]
       )
