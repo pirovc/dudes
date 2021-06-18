@@ -9,5 +9,5 @@ setup(
     version="0.08",
     packages=["dudes"],
     scripts=["DUDes.py", "DUDesDB.py"],
-    install_requires=["numpy", "pandas", "pyfaidx"],
+    install_requires=["numpy", "pandas", "pyfaidx", "tqdm"],
 )
