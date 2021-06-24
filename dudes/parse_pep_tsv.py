@@ -3,14 +3,21 @@ from pyfaidx import Fasta
 from tqdm import tqdm
 import pandas as pd
 from numpy import nan
+import numpy as np
 
 
 class Peptide2ReferenceTable:
     def __init__(self, msfragger_tsv_file=None, pep2ref_df=None):
         self.input_file = msfragger_tsv_file
-        self.df = pep2ref_df if (pep2ref_df is not None) else self.read_peptide_tsv(self.input_file)
+        self.df = (
+            pep2ref_df
+            if (pep2ref_df is not None)
+            else self.read_peptide_tsv(self.input_file)
+        )
         if not len(self.df) == len(self.df["Peptide"].unique()):
-            raise ValueError(f"Input contains duplicate Peptides. Input File: {msfragger_tsv_file}")
+            raise ValueError(
+                f"Input contains duplicate Peptides. Input File: {msfragger_tsv_file}"
+            )
         self.peptide_idx = self._build_pep_idx()
 
     def read_peptide_tsv(self, msfragger_tsv_file):
@@ -25,10 +32,13 @@ class Peptide2ReferenceTable:
             Proteins: list, accessions of proteins that contain the peptide sequence
         """
         df = pd.read_csv(
-            msfragger_tsv_file, sep="\t", usecols=["Peptide", "Protein", "Mapped Proteins"]
+            msfragger_tsv_file,
+            sep="\t",
+            usecols=["Peptide", "Protein", "Mapped Proteins"],
         )
         df["Proteins"] = df[["Protein", "Mapped Proteins"]].apply(
-            lambda x: x["Protein"] if x["Mapped Proteins"] is nan else ", ".join(x), axis=1
+            lambda x: x["Protein"] if x["Mapped Proteins"] is nan else ", ".join(x),
+            axis=1,
         )
         df["Proteins"] = df["Proteins"].apply(
             lambda x: [acc for acc in x.split(", ") if not acc.startswith("rev_")]
@@ -37,11 +47,7 @@ class Peptide2ReferenceTable:
         return df
 
     def get_all_accs(self):
-        return {
-            acc
-            for acc_lst in self.df["Proteins"]
-            for acc in acc_lst
-        }
+        return {acc for acc_lst in self.df["Proteins"] for acc in acc_lst}
 
     def get_peptides_matching_acc(self, acc):
         return set(self.df["Peptide"][self.df["Proteins"].map(lambda x: acc in x)])
@@ -73,7 +79,9 @@ class FastaExtension:
         return len(self.fasta[acc])
 
 
-def get_peptide_start_pos_in_protein_sequence(peptide_seq, protein_seq, equate_i_and_l=True):
+def get_peptide_start_pos_in_protein_sequence(
+    peptide_seq, protein_seq, equate_i_and_l=True
+):
     if equate_i_and_l:
         peptide_seq = peptide_seq.replace("I", "L")
         protein_seq = protein_seq.replace("I", "L")
@@ -112,11 +120,13 @@ def get_uniparc_to_ref_id_map(uniparc_accs, idmapping_file, refid_lookup):
     uprc_acc2sp_accs = get_uniparc_to_uniprot_acc_map(uniparc_accs, idmapping_file)
     uprc_acc2refids = {}
     for uprc_acc, sp_accs in uprc_acc2sp_accs.items():
-        uprc_acc2refids[uprc_acc] = [refid_lookup[a] for a in sp_accs if a in refid_lookup]
+        uprc_acc2refids[uprc_acc] = [
+            refid_lookup[a] for a in sp_accs if a in refid_lookup
+        ]
     return uprc_acc2refids
 
 
-def build_dfs(pep2ref, fasta_extension_obj):
+def build_dfs(pep2ref, fasta_extension_obj, refids_lookup, idmapping_file):
     """
 
     :param pep2ref: Peptide2ReferenceTable object
@@ -124,21 +134,39 @@ def build_dfs(pep2ref, fasta_extension_obj):
     :param refids_lookup: refid lookup table from dudesdb
     :return: read_table: rows: 'RefID','MatchPosStart','MatchScore','ReadID'
     """
-    dct_ref_lengths = {}
+    ref_lengths = []
     lst_read_table_rows = []
     set_of_matched_prot_accs = pep2ref.get_all_accs()
-    # get pep position in each reference sequence (add ref sequence length to dct_ref_lengths)
+    uprc2uprt = get_uniparc_to_uniprot_acc_map(pep2ref.get_all_accs(), idmapping_file)
+    # get pep position in each reference sequence (add ref sequence length to ref_lengths)
     for acc in set_of_matched_prot_accs:
         if acc in fasta_extension_obj.fasta:
             prot_seq = fasta_extension_obj.get_sequence_for_accession(acc)
-            dct_ref_lengths[acc] = len(prot_seq)
+            ref_lengths.append([acc, len(prot_seq)])
             for pep_seq in pep2ref.get_peptides_matching_acc(acc):
-                match_pos_start = get_peptide_start_pos_in_protein_sequence(pep_seq, prot_seq)
-                lst_read_table_rows.append([acc, match_pos_start, pep2ref.get_pep_id(pep_seq)])
-    df_reads = pd.DataFrame(lst_read_table_rows, columns=['RefID', 'MatchPosStart', 'ReadID'])
-    # replace accs by target db accs in dataframe and dct_ref_lengths
+                match_pos_start = get_peptide_start_pos_in_protein_sequence(
+                    pep_seq, prot_seq
+                )
+                lst_read_table_rows.append(
+                    [acc, match_pos_start, pep2ref.get_pep_id(pep_seq)]
+                )
+    df_reads = pd.DataFrame(
+        lst_read_table_rows, columns=["RefID", "MatchPosStart", "ReadID"]
+    )
+    # replace accs by target db accs in dataframe and ref_lengths
+    # replace uniparc_accs by uniprot_refids in dataframe
+    df_reads["RefID"] = df_reads["RefID"].map(lambda x: uprc2uprt.get(x, set()))
+    df_reads = df_reads.explode("RefID", ignore_index=True)
+    df_reads["RefID"] = df_reads["RefID"].map(lambda acc: refids_lookup.get(acc, -1))
+
+    # replace uniparc_accs by uniprot_refids in ref_lengths
+    ref_lengths = [
+        [refids_lookup.get(uprt_acc, -1), ref_len]
+        for uprc_acc, ref_len in ref_lengths
+        for uprt_acc in uprc2uprt.get(uprc_acc, set())
+    ]
     # replace target db accs by refids
-    return dct_ref_lengths, df_reads
+    return np.array(df_reads), np.array(ref_lengths)
 
 
 def main():
@@ -153,6 +181,6 @@ def main():
     # replace swissprot acc by reference ID
     # return two tables
     # 1: 'RefID','MatchPosStart','MatchScore','ReadID'
-    # 2: reference id (str), reference length (int)
+    # 2: reference id (int, -1 if not in refids_lookup), reference length (int)
 
     pass

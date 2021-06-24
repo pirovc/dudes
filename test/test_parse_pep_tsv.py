@@ -122,6 +122,7 @@ def test_get_uniparc_to_ref_id_map():
 
 
 def test_build_dfs():
+    print("\n")
     fasta = RESSOURCE_DIR / "uniparc_filtered.fasta"
     refids_lookup = ""
     idmapping_file = RESSOURCE_DIR / "idmapping_uniparc-test.tsv"
@@ -130,18 +131,14 @@ def test_build_dfs():
             RESSOURCE_DIR / "pep2acc.csv", converters={"Proteins": eval}
         )
     )
+    uprc2uprt = get_uniparc_to_uniprot_acc_map(pep2ref.get_all_accs(), idmapping_file)
+    refids_lookup = {acc: i
+                     for i, acc in enumerate(set().union(*uprc2uprt.values()))}
+    # print(refids_lookup)
     fasta_extension_obj = FastaExtension(
-        str(fasta), sequence_always_upper=True
+        fasta, sequence_always_upper=True
     )
     # get match match start pos, pep-length (=Score) and reference length
-    ref_len, df = build_dfs(pep2ref, fasta_extension_obj)
-    uprc2uprt = get_uniparc_to_uniprot_acc_map(pep2ref.get_all_accs(), idmapping_file)
-    print(len(uprc2uprt))
-    df["SwissProtAccs"] = df["RefID"].map(lambda x: uprc2uprt.get(x, set()))
-
-    print("\n", df)
-    # replace uniparc acc by swissprot acc
-    # replace swissprot acc by reference ID, missing accs by -1
-    # return two tables
-    # 1: 'RefID','MatchPosStart','MatchScore','ReadID'
-    # 2: reference id (str), reference length (int)
+    df, ref_len = build_dfs(pep2ref, fasta_extension_obj, refids_lookup, idmapping_file)
+    print(ref_len)
+    print(df)
