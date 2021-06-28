@@ -1,9 +1,11 @@
-from collections import defaultdict
+import argparse
 from pyfaidx import Fasta
 from tqdm import tqdm
 import pandas as pd
 from numpy import nan
 import numpy as np
+import sys
+import time
 
 
 class Peptide2ReferenceTable:
@@ -175,3 +177,74 @@ def build_dfs(pep2ref, fasta_extension_obj, refids_lookup, idmapping_file):
         for uprt_acc in uprc2uprt.get(uprc_acc, set())
     ]
     return np.array(df_reads), np.array(ref_lengths)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Parse MsFragger peptide identification results into dudes-readable format. Input accessessions "
+                    "are expected to be uniparc, mapped to uniprot (swissprot and trembl)"
+    )
+    parser.add_argument(
+        "-m",
+        required=True,
+        metavar="<msfragger_file>",
+        dest="msfragger_file",
+        help="MsFragger peptide.tsv result file",
+    )
+    parser.add_argument(
+        "-d",
+        required=True,
+        metavar="<database_file>",
+        dest="database_file",
+        help="Database file (output from DUDesDB [.npz])",
+    )
+    parser.add_argument(
+        "-f",
+        required=True,
+        metavar="<fasta_file>",
+        dest="fasta_file",
+        help="Uniparc fasta file(s) for mapping the position of peptide sequences and retrieving reference sequence"
+             "lengths. Each sequence header '>' should contain an "
+        "identifier in the same format as in the MsFragger input file.",
+    )
+    parser.add_argument(
+        "-i",
+        required=True,
+        metavar="<idmapping_file>",
+        dest="idmapping_file",
+        help="reference idmapping file, used to map uniparc accessions to uniprot accessions: "
+        "'idmapping_selected.tab[.gz]'"
+        "[from https://ftp.expasy.org/databases/uniprot/current_release/knowledgebase/idmapping/idmapping_selected.tab.gz",
+    )
+    parser.add_argument(
+        "-o",
+        metavar="<output_prefix>",
+        dest="output_prefix",
+        default="",
+        help="Output prefix. Default: STDOUT",
+    )
+    return parser.parse_args()
+
+
+def main():
+    args = parse_args()
+    fasta = args.fasta_file
+    idmapping_file = args.idmapping_file
+    output_prefix = args.output_prefix
+
+    refids_lookup = np.load(args.database_file, allow_pickle=True)["refids_lookup"].item()
+    pep2ref = Peptide2ReferenceTable(msfragger_tsv_file=args.msfragger_file)
+    fasta_extension_obj = FastaExtension(
+        fasta, sequence_always_upper=True
+    )
+    reads, ref_len = build_dfs(pep2ref, fasta_extension_obj, refids_lookup, idmapping_file)
+
+    # Save processed peptide identifications
+    sys.stdout.write("Saving database %s ..." % (output_prefix + ".npz"))
+    tx = time.time()
+    np.savez(output_prefix, reads=reads, reference_lengths=ref_len)
+    sys.stdout.write(" Done. Elapsed time: " + str(time.time() - tx) + " seconds\n")
+
+
+if __name__ == "__main__":
+    main()

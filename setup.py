@@ -8,6 +8,6 @@ setup(
     url="https://github.com/pirovc/dudes",
     version="0.08",
     packages=["dudes"],
-    scripts=["DUDes.py", "DUDesDB.py"],
+    scripts=["DUDes.py", "DUDesDB.py", "map_peptides.py"],
     install_requires=["numpy", "pandas", "pyfaidx", "tqdm"],
 )
