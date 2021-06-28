@@ -126,7 +126,12 @@ def main():
 	# Load sam file
 	sys.stdout.write("Loading sam file ...")
 	tx = time.time()
-	sam,ref = parse_sam(args.sam_file,args.sam_format,refids_lookup,reference_mode,threads)
+	if reference_mode == "up":
+		pep_npzfile = np.load(args.sam_file, allow_pickle=True)
+		sam = pep_npzfile["reads"]
+		ref = pep_npzfile["reference_lengths"]
+	else:
+		sam,ref = parse_sam(args.sam_file,args.sam_format,refids_lookup,reference_mode,threads)
 	sys.stdout.write(" Done. Elapsed time: " + str(time.time() - tx) + " seconds\n")
 
 	# Create objects
