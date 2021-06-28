@@ -14,27 +14,25 @@ class Peptide2ReferenceTable:
             if (pep2ref_df is not None)
             else self.read_peptide_tsv(self.input_file)
         )
-        if not len(self.df) == len(self.df["Peptide"].unique()):
-            raise ValueError(
-                f"Input contains duplicate Peptides. Input File: {msfragger_tsv_file}"
-            )
-        self.peptide_idx = self._build_pep_idx()
 
     def read_peptide_tsv(self, msfragger_tsv_file):
         """
-        Read msfragger peptide.tsv file into pandas dataframe. Dataframe has columns Peptide and Proteins. Proteins column
-        is a list of accessions from peptide.tsv columns "Protein" and "Mapped Proteins".
+        Read msfragger peptide.tsv file into pandas dataframe. Dataframe has index Peptide and columns MatchScore, and
+        Proteins.
+        Proteins column is a list of accessions from peptide.tsv columns "Protein" and "Mapped Proteins".
         Proteins Accession starting with "rev_" are removed.
 
         :param msfragger_tsv_file: peptide tsv file as produced by msfragger
-        :return: pandas data frame with two columns:
-            Peptide: str, Peptide sequence
+        :return: pandas data frame with two columns and Peptide sequence as index:
+            MatchScore: int, converted probability p: int(p.replace(".", ""))
             Proteins: list, accessions of proteins that contain the peptide sequence
         """
         df = pd.read_csv(
             msfragger_tsv_file,
             sep="\t",
-            usecols=["Peptide", "Protein", "Mapped Proteins"],
+            usecols=["Peptide", "Probability", "Protein", "Mapped Proteins"],
+            converters={"Probability": lambda x: int(x.replace(".", ""))},
+            index_col="Peptide",
         )
         df["Proteins"] = df[["Protein", "Mapped Proteins"]].apply(
             lambda x: x["Protein"] if x["Mapped Proteins"] is nan else ", ".join(x),
@@ -44,19 +42,14 @@ class Peptide2ReferenceTable:
             lambda x: [acc for acc in x.split(", ") if not acc.startswith("rev_")]
         )
         df.drop(columns=["Protein", "Mapped Proteins"], inplace=True)
+        df.rename({"Probability": "MatchScore"}, axis=1, inplace=True)
         return df
 
     def get_all_accs(self):
         return {acc for acc_lst in self.df["Proteins"] for acc in acc_lst}
 
     def get_peptides_matching_acc(self, acc):
-        return set(self.df["Peptide"][self.df["Proteins"].map(lambda x: acc in x)])
-
-    def _build_pep_idx(self):
-        pep2id = defaultdict(lambda: len(pep2id))
-        for i, pep in enumerate(self.df["Peptide"]):
-            pep2id[pep] = i
-        return pep2id
+        return set(self.df.index[self.df["Proteins"].map(lambda x: acc in x)])
 
     def get_pep_id(self, pep):
         """
@@ -65,7 +58,16 @@ class Peptide2ReferenceTable:
         :param pep:
         :return: int
         """
-        return self.peptide_idx[pep]
+        return self.df.index.get_loc(pep)
+
+    def get_pep_score(self, pep):
+        """
+        get score of peptide sequence
+
+        :param pep: str
+        :return: int
+        """
+        return self.df.loc[pep, "MatchScore"]
 
 
 class FastaExtension:
@@ -148,15 +150,22 @@ def build_dfs(pep2ref, fasta_extension_obj, refids_lookup, idmapping_file):
                     pep_seq, prot_seq
                 )
                 lst_read_table_rows.append(
-                    [acc, match_pos_start, pep2ref.get_pep_id(pep_seq)]
+                    [
+                        acc,
+                        match_pos_start,
+                        pep2ref.get_pep_score(pep_seq),
+                        pep2ref.get_pep_id(pep_seq),
+                    ]
                 )
     df_reads = pd.DataFrame(
-        lst_read_table_rows, columns=["RefID", "MatchPosStart", "ReadID"]
+        lst_read_table_rows, columns=["RefID", "MatchPosStart", "MatchScore", "ReadID"]
     )
     # replace accs by target db accs in dataframe and ref_lengths
-    # replace uniparc_accs by uniprot_refids in dataframe
+    # replace uniparc_accs by uniprot_accs in dataframe
     df_reads["RefID"] = df_reads["RefID"].map(lambda x: uprc2uprt.get(x, set()))
+    # explode set of uniprot_accs, one acc per row
     df_reads = df_reads.explode("RefID", ignore_index=True)
+    # replace uniprot_accs by refids
     df_reads["RefID"] = df_reads["RefID"].map(lambda acc: refids_lookup.get(acc, -1))
 
     # replace uniparc_accs by uniprot_refids in ref_lengths
@@ -165,22 +174,4 @@ def build_dfs(pep2ref, fasta_extension_obj, refids_lookup, idmapping_file):
         for uprc_acc, ref_len in ref_lengths
         for uprt_acc in uprc2uprt.get(uprc_acc, set())
     ]
-    # replace target db accs by refids
     return np.array(df_reads), np.array(ref_lengths)
-
-
-def main():
-    fasta = ""
-    peptide_tsv = ""
-    refids_lookup = ""
-    idmapping_file = ""
-    pep2ref = Peptide2ReferenceTable(peptide_tsv)
-    # get match match start pos, pep-length (=Score) and reference length
-    df = build_dfs(pep2ref, fasta)
-    # replace uniparc acc by swissprot acc
-    # replace swissprot acc by reference ID
-    # return two tables
-    # 1: 'RefID','MatchPosStart','MatchScore','ReadID'
-    # 2: reference id (int, -1 if not in refids_lookup), reference length (int)
-
-    pass
