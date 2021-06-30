@@ -38,10 +38,12 @@ from dudes.Rep import Rep
 from dudes.Bins import Bins
 from dudes.Names import Names
 from dudes.Ranks import Ranks
+from dudes import VERSION
+
 
 def main():
 	
-	version = 'v0.08'
+	version = VERSION
 	
 	total_tx = time.time()
 	

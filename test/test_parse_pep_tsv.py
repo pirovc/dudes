@@ -18,7 +18,7 @@ pd.options.display.width = 0
 
 def test_read_peptide_tsv():
     pep2ref = Peptide2ReferenceTable(RESSOURCE_DIR / "peptide.tsv")
-    # pep2ref.df.to_csv(RESSOURCE_DIR / "pep2acc.csv", index=False)
+    # pep2ref.df.to_csv(RESSOURCE_DIR / "pep2acc.csv")
     expected_df = pd.read_csv(
         RESSOURCE_DIR / "pep2acc.csv", converters={"Proteins": eval},
         index_col="Peptide"

@@ -25,14 +25,15 @@ class Peptide2ReferenceTable:
         Proteins Accession starting with "rev_" are removed.
 
         :param msfragger_tsv_file: peptide tsv file as produced by msfragger
-        :return: pandas data frame with two columns and Peptide sequence as index:
+        :return: pandas data frame with Peptide sequence as index and three columns:
             MatchScore: int, converted probability p: int(p.replace(".", ""))
             Proteins: list, accessions of proteins that contain the peptide sequence
+            Spectral Count: int, spectral count of the peptide
         """
         df = pd.read_csv(
             msfragger_tsv_file,
             sep="\t",
-            usecols=["Peptide", "Probability", "Protein", "Mapped Proteins"],
+            usecols=["Peptide", "Probability", "Spectral Count", "Protein", "Mapped Proteins"],
             converters={"Probability": lambda x: int(x.replace(".", ""))},
             index_col="Peptide",
         )
@@ -70,6 +71,15 @@ class Peptide2ReferenceTable:
         :return: int
         """
         return self.df.loc[pep, "MatchScore"]
+
+    def get_pep_count(self, pep):
+        """
+        get spectral count of peptide sequence
+
+        :param pep: str
+        :return: int
+        """
+        return self.df.loc[pep, "Spectral Count"]
 
 
 class FastaExtension:
@@ -156,12 +166,27 @@ def build_dfs(pep2ref, fasta_extension_obj, refids_lookup, idmapping_file):
                         acc,
                         match_pos_start,
                         pep2ref.get_pep_score(pep_seq),
-                        pep2ref.get_pep_id(pep_seq),
+                        pep_seq,
+                        pep2ref.get_pep_count(pep_seq)
                     ]
                 )
     df_reads = pd.DataFrame(
-        lst_read_table_rows, columns=["RefID", "MatchPosStart", "MatchScore", "ReadID"]
+        lst_read_table_rows, columns=["RefID", "MatchPosStart", "MatchScore", "PeptideSeq", "ReadCount"]
     )
+
+    grouped = df_reads.groupby("PeptideSeq", sort=False)
+    pep_id = 0
+    dfs_with_pep_id = []
+    for _, df in grouped:
+        for i in range(df["ReadCount"].iloc[0]):
+            df_c = df.copy()
+            df_c["ReadID"] = pep_id
+            dfs_with_pep_id.append(df_c)
+            pep_id += 1
+    df_reads = pd.concat(dfs_with_pep_id, axis=0, ignore_index=True)
+
+    df_reads = df_reads[["RefID", "MatchPosStart", "MatchScore", "ReadID"]]
+
     # replace accs by target db accs in dataframe and ref_lengths
     # replace uniparc_accs by uniprot_accs in dataframe
     df_reads["RefID"] = df_reads["RefID"].map(lambda x: uprc2uprt.get(x, set()))

@@ -31,8 +31,7 @@ from collections import defaultdict
 import multiprocessing as mp
 import time, sys
 import pandas as pd
-
-VERSION = 'v0.08'
+from dudes import VERSION
 
 
 def main():
