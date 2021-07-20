@@ -71,6 +71,8 @@ def main():
 	parser.add_argument('-l', metavar='<last_rank>', dest="last_rank", default="species", help="Last considered rank ["+ ','.join(Ranks.ranks) + "]. Default: 'species'")
 	parser.add_argument('-b', metavar='<bin_size>', dest="bin_size", type=float, default=0.25, help="Bin size (0-1: percentile from the lengths of all references in the database / >=1: bp). Default: 0.25")
 	parser.add_argument('-o', metavar='<output_prefix>', dest="output_prefix", default="", help="Output prefix. Default: STDOUT")
+	parser.add_argument('--debug', action='store_true',
+						help="print debug info to STDERR")
 	parser.add_argument('-v', action='version', version='%(prog)s ' + version)
 	args = parser.parse_args()
 				
@@ -83,7 +85,7 @@ def main():
 	permutations = 1000
 	min_group_size = 5
 
-	DEBUG = 0
+	DEBUG = args.debug
 	
 	sys.stdout.write("- - - - - - - - - - - - - - - - - - - - -\n")	
 	sys.stdout.write("|\t\tDUDes %s\t\t|\n" % version)
