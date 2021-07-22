@@ -25,6 +25,7 @@
 		
 import numpy as np
 np.set_printoptions(threshold=10000,suppress=True,formatter={'float': '{: 0.6f}'.format},linewidth=1000)
+import os
 import argparse, time, shelve
 import multiprocessing as mp
 from collections import defaultdict
@@ -48,6 +49,7 @@ def main():
 	total_tx = time.time()
 	
 	global DEBUG
+	global DEBUG_PLOTS_DIR
 	global threads
 	global fixed_ranks
 	global thr_alpha
@@ -73,6 +75,8 @@ def main():
 	parser.add_argument('-o', metavar='<output_prefix>', dest="output_prefix", default="", help="Output prefix. Default: STDOUT")
 	parser.add_argument('--debug', action='store_true',
 						help="print debug info to STDERR")
+	parser.add_argument('--debug_plots_dir', default="",
+						help="path to directory for writing debug plots to.")
 	parser.add_argument('-v', action='version', version='%(prog)s ' + version)
 	args = parser.parse_args()
 				
@@ -86,6 +90,7 @@ def main():
 	min_group_size = 5
 
 	DEBUG = args.debug
+	DEBUG_PLOTS_DIR = args.debug_plots_dir
 	
 	sys.stdout.write("- - - - - - - - - - - - - - - - - - - - -\n")	
 	sys.stdout.write("|\t\tDUDes %s\t\t|\n" % version)
@@ -192,6 +197,10 @@ def main():
 		sys.stdout.write("Performing iteration " + str(iter+1) + " ...")
 		sys.stdout.flush()
 		tx = time.time()
+		debug_plot_dir_n = os.path.join(DEBUG_PLOTS_DIR,
+										f"iter_{iter+1}")
+		if DEBUG_PLOTS_DIR:
+			os.makedirs(debug_plot_dir_n, exist_ok=True)
 		iter_ident = Ident()
 		# Save species matches to strain search
 		species_matches = dict()
@@ -210,7 +219,7 @@ def main():
 		printDebug(DEBUG, iter_ident.ident)
 		
 		# First loop until last rank
-		iter_ident.add(treeIter(pool,iter,smap,ttree,refs,taxid_start,stop_rank))
+		iter_ident.add(treeIter(pool,iter,smap,ttree,refs,taxid_start,stop_rank, debug_plot_dir_n))
 		
 		if iter_ident.getSize():
 			# Loop on current leafs of the identification
@@ -228,7 +237,7 @@ def main():
 			if species_matches and args.last_rank=="strain":
 				for species_taxid,dMatches in species_matches.items():
 					printDebug(DEBUG, "#### Strain search - species taxid %d" % species_taxid)
-					strains, totalMatchScoreSum = strainIdent(pool,iter,smap.getSubSet(dMatches),ttree,refs,species_taxid)
+					strains, totalMatchScoreSum = strainIdent(pool,iter,smap.getSubSet(dMatches),ttree,refs,species_taxid, debug_plot_dir_n)
 					if strains.getSize():
 						# Reset MatchScoreSum from species removing the total used in the strains
 						iter_ident.setMatchScoreSum(iter,species_taxid, iter_ident.getSubSet(np.logical_and(iter_ident.getCol('Iter')==iter,iter_ident.getCol('TaxID')==species_taxid)).getCol('MatchScoreSum') - totalMatchScoreSum)
@@ -297,11 +306,11 @@ def main():
 ############################################################################################################################	
 ############################################################################################################################
 
-def strainIdent(pool,iter,smap_species,ttree,refs,taxid_species):
+def strainIdent(pool,iter,smap_species,ttree,refs,taxid_species, debug_plot_dir):
 	strains = Ident()
 	totalMatchScoreSum = 0
 	while True:
-		iter_strain = treeIter(pool,iter,smap_species,ttree,refs,taxid_species,"strain")
+		iter_strain = treeIter(pool,iter,smap_species,ttree,refs,taxid_species,"strain", debug_plot_dir)
 		printDebug(DEBUG,iter_strain.ident)
 		if iter_strain.getSize():
 			# save indirect matches together (because they can overlap)
@@ -327,7 +336,7 @@ def strainIdent(pool,iter,smap_species,ttree,refs,taxid_species):
 
 	return strains, totalMatchScoreSum
 
-def treeIter(pool,iter,smap,ttree,refs,taxid_start,stop_rank):
+def treeIter(pool,iter,smap,ttree,refs,taxid_start,stop_rank, debug_plot_dir):
 
 	iter_ident = Ident()
 	stack = [taxid_start]
@@ -435,9 +444,9 @@ def treeIter(pool,iter,smap,ttree,refs,taxid_start,stop_rank):
 						else:
 							real_rej = True
 							if threads>1:
-								pool_res[(i,j)] = pool.apply_async(perm_pval,args=(groups[nodes[i]],groups[nodes[j]],))
+								pool_res[(i,j)] = pool.apply_async(perm_pval,args=(groups[nodes[i]],groups[nodes[j]],cvs[i],nodes[i],nodes[j],debug_plot_dir))
 							else:
-								pv = perm_pval(groups[nodes[i]],groups[nodes[j]])
+								pv = perm_pval(groups[nodes[i]],groups[nodes[j]],cvs[i],nodes[i],nodes[j],debug_plot_dir)
 								pvs[i,j] = pv # store p-value
 								if pv>cvs[i]: 
 									rjs[i,j] = 1
@@ -487,7 +496,16 @@ def treeIter(pool,iter,smap,ttree,refs,taxid_start,stop_rank):
 	return iter_ident
 
 		
-def perm_pval(c,t):
+def perm_pval(c,t,cv, taxon_id_control, taxon_id_treatment, debug_plot_dir):
+	"""
+	calculate permutation based p-value of control group versus treatment group.
+
+	:param c: control group bin scores
+	:param t: treatment group bin scores
+	:param cv: critical value
+	:param debug_plot_dir: path to directory to save debug plots in
+	:return:
+	"""
 	# Normalize the groups (0-1)
 	#mx = np.max(np.concatenate([c,t]))
 	norm_c = np.sort(c)[::-1]#/float(mx)
@@ -514,11 +532,56 @@ def perm_pval(c,t):
 		np.random.shuffle(combined)
 		diff_random[n] = np.mean(combined[:norm_c_sub.size]) - np.mean(combined[norm_c_sub.size:])
 
-	pv = sum(np.greater_equal(diff_random,diff_obs)) / float(permutations)			
+	pv = sum(np.greater_equal(diff_random,diff_obs)) / float(permutations)
+
+	if DEBUG_PLOTS_DIR:
+		plot_bin_scores(norm_c, norm_t, cutoff, diff_random, diff_obs, cv, taxon_id_control, taxon_id_treatment, debug_plot_dir)
 
 	return pv
-	
-	
+
+
+def plot_bin_scores(norm_c, norm_t, cutoff, diff_random, diff_obs, cv, taxon_id_control, taxon_id_treatment, plot_dir):
+	"""
+	Plot figure with two graphs:
+	1. norm_c in blue, norm_t in red, cutoff -1 as vertical line
+	2. histogrmm of diff_random, with diff_obs and cv as vertical lines
+
+	:param norm_c:
+	:param norm_t:
+	:param cutoff:
+	:param diff_random:
+	:param diff_obs:
+	:param cv:
+	:param taxon_id_control:
+	:param taxon_id_treatment:
+	:param plot_dir:
+	:return:
+	"""
+	import matplotlib.pyplot as plt
+	fig, ax = plt.subplots(nrows=1, ncols=2, sharex=False, sharey=False)
+	ax[0].plot(norm_c, lw=2.5, color='blue', label='A')
+	ax[0].plot(norm_t, lw=2.5, color='red', label='B')
+	ax[0].legend(fontsize=20)
+	ax[0].axvline(cutoff - 1, color='black', lw=3)
+	# ax[0].text(cutoff-1+5, 100, int(cutoff), fontsize=20)
+	# ax[0].set_xticks([])
+	ax[0].set_yticks([])
+	ax[0].set_xlabel('bins', fontsize=20)
+	ax[0].set_ylabel('bin score', fontsize=20)
+	ax[1].hist(diff_random, 50, alpha=0.8, color='gray')
+	ax[1].axvline(diff_obs, color='green', lw=3)
+	ax[1].axvline(1 - np.percentile(diff_random, cv), color='red', lw=3, ls="--")
+	ax[1].set_xticks([])
+	ax[1].set_yticks([])
+	xlim = ax[1].get_xlim()
+	ax[1].set_xlim(xlim[0] - 100, xlim[1] + 100)
+	fig.tight_layout()
+	# build filename
+	plt_fname = os.path.join(plot_dir, f"{taxon_id_control}_vs_{taxon_id_treatment}.svg")
+	fig.savefig(plt_fname)
+	plt.close(fig)
+
+
 def findDirectMatches(smap,ttree,taxid):
 	# ttree - References from the identified taxid
 	rej_ref_ttree = ttree.getSubSet(np.in1d(ttree.getCol('TaxID'), taxid)).getCol('RefID')
