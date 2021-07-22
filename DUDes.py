@@ -596,7 +596,7 @@ def findIndirectMatches(smap,direct_matches_smap_idx):
 	# Get best match from the direct matches (because sometimes the same read can match several references)
 	direct_matches = smap.getSubSet(direct_matches_smap_idx)
 	order_dm,index_dm = group_max(direct_matches.getCol('ReadID'),direct_matches.getCol('MatchScore'))
-	max_match_score_direct_matches = defaultdict(np.int,list(zip(np.unique(direct_matches.getCol('ReadID')),direct_matches.getSubSet(order_dm).getSubSet(index_dm).getCol('MatchScore'))))
+	max_match_score_direct_matches = defaultdict(int,list(zip(np.unique(direct_matches.getCol('ReadID')),direct_matches.getSubSet(order_dm).getSubSet(index_dm).getCol('MatchScore'))))
 	
 	# Matches from the reads used in the identification but assigned to other references
 	indirect_matches_smap_idx = np.logical_and(rej_reads_smap_idx, ~direct_matches_smap_idx)
