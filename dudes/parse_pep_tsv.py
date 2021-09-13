@@ -146,7 +146,9 @@ def build_dfs(pep2ref, fasta_extension_obj, refids_lookup, idmapping_file):
     :param pep2ref: Peptide2ReferenceTable object
     :param fasta_extension_obj: a FastaExtension object
     :param refids_lookup: refid lookup table from dudesdb
-    :return: read_table: rows: 'RefID','MatchPosStart','MatchScore','ReadID'
+    :return: 2 np.arrays:
+        1) read_table: columns: 'RefID','MatchPosStart','MatchScore','ReadID'
+        2) reference lengths: columns: 'RefID', 'ReferenceSequenceLength'
     """
     ref_lengths = []
     lst_read_table_rows = []
