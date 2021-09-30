@@ -309,13 +309,13 @@ def parse_args():
                         help="reference id to taxid file(s): "
                              "'gi_taxid_nucl.dmp[.gz]' --> 'gi' mode, "
                              "'*.accession2taxid[.gz]' --> 'av' mode "
-                             "[from NCBI taxonomy database ftp://ftp.ncbi.nih.gov/pub/taxonomy/]"
+                             "[from NCBI taxonomy database https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/]"
                              "'idmapping_selected.tab[.gz]' --> 'up' mode "
                              "[from https://ftp.expasy.org/databases/uniprot/current_release/knowledgebase/idmapping/idmapping_selected.tab.gz")
     parser.add_argument('-n', required=True, metavar='<nodes_file>', dest="nodes_file",
-                        help="nodes.dmp file [from NCBI taxonomy database ftp://ftp.ncbi.nih.gov/pub/taxonomy/]")
+                        help="nodes.dmp file [from NCBI taxonomy database https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/]")
     parser.add_argument('-a', metavar='<names_file>', dest="names_file",
-                        help="names.dmp file [from NCBI taxonomy database ftp://ftp.ncbi.nih.gov/pub/taxonomy/]")
+                        help="names.dmp file [from NCBI taxonomy database https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/]")
     parser.add_argument('-o', metavar='<output_prefix>', dest="output_prefix", default="dudesdb",
                         help="Output prefix. Default: dudesdb")
     parser.add_argument('-t', metavar='<threads>', dest="threads", type=int, default=1, help="# of threads. Default: 1")
