@@ -1,6 +1,8 @@
 from distutils.core import setup
 from dudes import VERSION
 
+install_requires = ["numpy", "pandas", "pyfaidx", "tqdm", "biopython", "matplotlib"]
+
 setup(
     name="dudes",
     description="DUDes: a top-down taxonomic profiler for metagenomics",
@@ -10,5 +12,5 @@ setup(
     version=VERSION,
     packages=["dudes"],
     scripts=["DUDes.py", "DUDesDB.py", "map_peptides.py"],
-    install_requires=["numpy", "pandas", "pyfaidx", "tqdm", "biopython"],
+    install_requires=install_requires,
 )
