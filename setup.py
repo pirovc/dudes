@@ -10,5 +10,5 @@ setup(
     version=VERSION,
     packages=["dudes"],
     scripts=["DUDes.py", "DUDesDB.py", "map_peptides.py"],
-    install_requires=["numpy", "pandas", "pyfaidx", "tqdm"],
+    install_requires=["numpy", "pandas", "pyfaidx", "tqdm", "biopython"],
 )
