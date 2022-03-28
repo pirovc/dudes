@@ -1,29 +1,23 @@
-#!/usr/bin/env python3
-# The MIT License (MIT)
-#
-# Copyright (c) 2015 - Vitor C. Piro - PiroV@rki.de - vitorpiro@gmail.com
-# Robert Koch-Institut, Germany
-# All rights reserved.
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+import argparse
+import multiprocessing as mp
+import os
+import sys
+import time
+from collections import defaultdict
 
 import numpy as np
+
+from dudes import VERSION
+from dudes.Bins import Bins
+from dudes.Ident import Ident
+from dudes.Names import Names
+from dudes.Ranks import Ranks
+from dudes.Refs import Refs
+from dudes.Rep import Rep
+from dudes.SMap import SMap
+from dudes.TTree import TTree
+from dudes.Util import group_max, printDebug, getIndexRank, getNameRank
+from dudes.parse_sam import parse_sam
 
 np.set_printoptions(
     threshold=10000,
@@ -31,22 +25,6 @@ np.set_printoptions(
     formatter={"float": "{: 0.6f}".format},
     linewidth=1000,
 )
-import os
-import argparse, time, shelve
-import multiprocessing as mp
-from collections import defaultdict
-from dudes.parse_sam import parse_sam
-from dudes.Util import *
-from dudes.SMap import SMap
-from dudes.Refs import Refs
-from dudes.TTree import TTree
-from dudes.Ident import Ident
-from dudes.Rep import Rep
-from dudes.Bins import Bins
-from dudes.Names import Names
-from dudes.Ranks import Ranks
-from dudes import VERSION
-import sys
 
 
 def main():
@@ -475,13 +453,6 @@ def main():
     sys.stdout.write(
         "Total elapsed time: " + str(time.time() - total_tx) + " seconds\n"
     )
-
-
-############################################################################################################################
-############################################################################################################################
-############################################################################################################################
-############################################################################################################################
-############################################################################################################################
 
 
 def strainIdent(pool, iter, smap_species, ttree, refs, taxid_species, debug_plot_dir):
@@ -1216,7 +1187,3 @@ def printBioBoxes(rep, total_abundance_norm, names, sam_file, database_file):
                 )
             )
         )
-
-
-if __name__ == "__main__":
-    main()

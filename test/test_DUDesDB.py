@@ -1,12 +1,15 @@
+import sys
+from unittest.mock import patch
+
 import numpy as np
-import subprocess
-from DUDesDB import load_refid2taxid_files, get_reference_identifiers
-from test.helper_funcs import RESSOURCE_DIR, DUDES_DIR, md5sum
+
+from dudes.database.main import load_refid2taxid_files, get_reference_identifiers, main
+from test.helper_funcs import RESSOURCE_DIR, DUDES_DIR, md5sum, set_directory
 
 
 def test_load_refid2taxid_files_up():
     refids = {'Q6GZX4', 'Q6GZX3', 'Q197F8', 'Q197F7', 'Q6GZX2', 'Q6GZX1', 'Q197F5', 'Q6GZX0', 'Q91G88', 'Q6GZW9', 'Q6GZW8', 'Q197F3', 'Q197F2', 'Q6GZW6', 'Q91G85', 'Q6GZW5'}
-    refid2taxid_files = ["test/ressource/idmapping_selected-test.tab"]
+    refid2taxid_files = [str(RESSOURCE_DIR / "idmapping_selected-test.tab")]
     refid_taxid, refids_lookup = load_refid2taxid_files(refid2taxid_files, "up", refids)
     expected_refid_taxid = np.array([[0, 654924], [1, 654924], [2, 345201], [3, 345201], [4, 654924], [5, 654924],
                                      [6, 345201], [7, 654924], [8, 176652], [9, 654924], [10, 654924], [11, 345201],
@@ -20,7 +23,7 @@ def test_load_refid2taxid_files_up():
 
 def test_get_reference_identifiers_uniprot():
     expected_accs = {'Q6GZX4', 'Q6GZX3', 'Q197F8', 'Q197F7', 'Q6GZX2', 'Q6GZX1', 'Q197F5', 'Q6GZX0', 'Q91G88', 'Q6GZW9', 'Q6GZW8', 'Q197F3', 'Q197F2', 'Q6GZW6', 'Q91G85', 'Q6GZW5'}
-    assert expected_accs == get_reference_identifiers(["test/ressource/uniprot_sprot-head.fasta"], "up")
+    assert expected_accs == get_reference_identifiers([str(RESSOURCE_DIR / "uniprot_sprot-head.fasta")], "up")
 
 
 def test_DUDesDB(tmp_path):
@@ -33,6 +36,9 @@ def test_DUDesDB(tmp_path):
             "-n", RESSOURCE_DIR / "nodes.dmp",
             "-a", RESSOURCE_DIR / "names.dmp",
             "-o", tmp_path / "dudesdb"]
-    subprocess.call(args)
+    args_str = list(map(str, args))
+    with set_directory(DUDES_DIR):
+        with patch.object(sys, "argv", args_str):
+            main()
     assert md5sum(produced_db) == md5sum(expected_db), \
         'wrong dudes database file produced'

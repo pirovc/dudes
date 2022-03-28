@@ -1,4 +1,4 @@
-import re, os
+import re
 import numpy as np
 import multiprocessing as mp
 from itertools import islice

@@ -1,4 +1,4 @@
-from DUDes import main
+from dudes.main import main
 from test.helper_funcs import RESSOURCE_DIR, DUDES_DIR, SAMPLEDATA_DIR, md5sum, set_directory
 from unittest.mock import patch
 import sys
