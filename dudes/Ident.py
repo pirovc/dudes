@@ -5,6 +5,7 @@ from dudes.Util import *
 
 
 class Ident:
+    """Identification class to hold identified taxon IDs"""
     columns = [
         "Iter",
         "TaxID",
