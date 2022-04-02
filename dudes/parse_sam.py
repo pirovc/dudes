@@ -30,7 +30,7 @@ def parse_lines(lines):
         # read, _, ref_acc, 1-based-leftmost-mapping-position, _. CIGAR-string, *_
         if fields[2] != "*":  # reference accesion
             cig = {"I": 0, "D": 0, "M": 0}
-            for val, ci in re.findall("(\d+)([IDM])", fields[5]):
+            for val, ci in re.findall(r"(\d+)([IDM])", fields[5]):
                 cig[ci] += int(val)
             sam[c, 0] = refids_lookup.get(
                 refid_regex.search(fields[2]).group()[slice:], -1
@@ -52,7 +52,7 @@ def parse_lines_extended(lines):
         fields = l.split("\t")
         if fields[2] != "*":
             cig = {"I": 0, "D": 0, "M": 0, "=": 0, "X": 0}
-            for val, ci in re.findall("(\d+)([IDM=X])", fields[5]):
+            for val, ci in re.findall(r"(\d+)([IDM=X])", fields[5]):
                 cig[ci] += int(val)
             sam[c, 0] = refids_lookup.get(
                 refid_regex.search(fields[2]).group()[slice:], -1
@@ -95,10 +95,10 @@ def parse_sam(sam_file, sam_format, rl, reference_mode, threads):
     refids_lookup = rl
 
     if reference_mode == "gi":
-        refid_regex = re.compile("gi\|[0-9]*")
+        refid_regex = re.compile(r"gi\|[0-9]*")
         slice = 3
     else:
-        refid_regex = re.compile("[A-Z0-9_\.]*")  # without ">" from fasta regex
+        refid_regex = re.compile(r"[A-Z0-9_\.]*")  # without ">" from fasta regex
         slice = 0
 
     refs = []
