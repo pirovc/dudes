@@ -34,17 +34,17 @@ def main():
 
     global DEBUG
     global DEBUG_PLOTS_DIR
-    global threads
-    global fixed_ranks
-    global thr_alpha
-    global bin_cutoff
-    global permutations
+    global THREADS
+    global FIXED_RANKS
+    global THR_ALPHA
+    global BIN_CUTOFF
+    global PERMUTATIONS
 
-    global total_matches_filter
-    global min_reference_matches_percent
-    global min_reference_matches_number
-    global min_group_size
-    global bin_size
+    global TOTAL_MATCHES_FILTER
+    global MIN_REFERENCE_MATCHES_PERCENT
+    global MIN_REFERENCE_MATCHES_NUMBER
+    global MIN_GROUP_SIZE
+    global BIN_SIZE
 
     parser = argparse.ArgumentParser(prog="DUDes.py")
     parser.add_argument(
@@ -134,13 +134,13 @@ def main():
     args = parser.parse_args()
 
     # Constants
-    threads = args.threads
-    fixed_ranks = Ranks.ranks
+    THREADS = args.threads
+    FIXED_RANKS = Ranks.ranks
     taxid_start = args.taxid_start
-    thr_alpha = 0.05
-    bin_cutoff = 50
-    permutations = 1000
-    min_group_size = 5
+    THR_ALPHA = 0.05
+    BIN_CUTOFF = 50
+    PERMUTATIONS = 1000
+    MIN_GROUP_SIZE = 5
 
     DEBUG = args.debug
     DEBUG_PLOTS_DIR = args.debug_plots_dir
@@ -161,18 +161,18 @@ def main():
     sys.stdout.write("- - - - - - - - - - - - - - - - - - - - -\n")
 
     # Start pool before all to not account for memory several times (on some linux systems)
-    if threads > 1:
-        pool = mp.Pool(threads)
+    if THREADS > 1:
+        pool = mp.Pool(THREADS)
     else:
         pool = []
 
     # Calculate min. matches
     if args.min_reference_matches < 1:
-        min_reference_matches_percent = args.min_reference_matches
-        min_reference_matches_number = 1
+        MIN_REFERENCE_MATCHES_PERCENT = args.min_reference_matches
+        MIN_REFERENCE_MATCHES_NUMBER = 1
     else:
-        min_reference_matches_percent = 0
-        min_reference_matches_number = int(args.min_reference_matches)
+        MIN_REFERENCE_MATCHES_PERCENT = 0
+        MIN_REFERENCE_MATCHES_NUMBER = int(args.min_reference_matches)
 
     # Load database file
     sys.stdout.write("Loading database file ...")
@@ -196,7 +196,7 @@ def main():
         ref = pep_npzfile["reference_lengths"]
     else:
         sam, ref = parse_sam(
-            args.sam_file, args.sam_format, refids_lookup, reference_mode, threads
+            args.sam_file, args.sam_format, refids_lookup, reference_mode, THREADS
         )
     sys.stdout.write(" Done. Elapsed time: " + str(time.time() - tx) + " seconds\n")
 
@@ -211,10 +211,10 @@ def main():
     total_matches_all = float(smap.getSize())
 
     # Filter nodes by last rank (don't limit if strain is selected)
-    if args.last_rank in fixed_ranks and args.last_rank != "strain":
-        fixed_ranks = fixed_ranks[: fixed_ranks.index(args.last_rank) + 1]
+    if args.last_rank in FIXED_RANKS and args.last_rank != "strain":
+        FIXED_RANKS = FIXED_RANKS[: FIXED_RANKS.index(args.last_rank) + 1]
         ttree = ttree.getSubSet(
-            ttree.getCol("RankID") <= fixed_ranks.index(args.last_rank)
+            ttree.getCol("RankID") <= FIXED_RANKS.index(args.last_rank)
         )
 
     # Filter references/matches without taxonomic entries (and the taxonomic entries based only on used references)
@@ -231,7 +231,7 @@ def main():
         sys.stdout.write(" Done. Elapsed time: " + str(time.time() - tx) + " seconds\n")
 
     # Total matches after filtering
-    total_matches_filter = float(smap.getSize())
+    TOTAL_MATCHES_FILTER = float(smap.getSize())
 
     # Identify leaf nodes (for multiple testing correction)
     sys.stdout.write("Identifying leaf nodes ...")
@@ -241,14 +241,14 @@ def main():
     ttree.setLeafs(ttree.getSubSet(ttree_order).getSubSet(ttree_index))
     sys.stdout.write(" Done. Elapsed time: " + str(time.time() - tx) + " seconds\n")
 
-    # Calculate bin size (at least 75% of the reference sequences lens should be higher than the bin_size)
+    # Calculate bin size (at least 75% of the reference sequences lens should be higher than the BIN_SIZE)
     if args.bin_size < 1:
-        bin_size = int(
+        BIN_SIZE = int(
             np.round(np.percentile(refs.getCol("SeqLen"), args.bin_size * 100))
         )
-        sys.stdout.write("Calculated bin size = %d\n" % bin_size)
+        sys.stdout.write("Calculated bin size = %d\n" % BIN_SIZE)
     else:
-        bin_size = int(args.bin_size)
+        BIN_SIZE = int(args.bin_size)
 
     # Count iterations
     iter = 0
@@ -386,7 +386,7 @@ def main():
             DEBUG,
             "\n".join(
                 ident.printTree(
-                    taxid_start, total_matches_filter, total_abundance_norm, names
+                    taxid_start, TOTAL_MATCHES_FILTER, total_abundance_norm, names
                 )
             ),
         )
@@ -441,7 +441,7 @@ def main():
         sys.stdout.write(" No identifications")
 
     # Close threads
-    if threads > 1:
+    if THREADS > 1:
         pool.close()
         pool.join()
 
@@ -537,7 +537,7 @@ def treeIter(pool, iter, smap, ttree, refs, taxid_start, stop_rank, debug_plot_d
         sub_smap = smap.getSubSet(findDirectMatches(smap, ttree, taxid_start))
 
     if sub_smap.getSize():
-        bins = Bins(sub_smap, bin_size)
+        bins = Bins(sub_smap, BIN_SIZE)
 
         while stack:
             parent_taxid = stack.pop()
@@ -628,7 +628,7 @@ def treeIter(pool, iter, smap, ttree, refs, taxid_start, stop_rank, debug_plot_d
                         .getCol("TaxID")
                     ).size
                     # Bonferonni and meinshausen correction
-                    cvs[pi] = (thr_alpha / float(len(nodes) - 1)) * (
+                    cvs[pi] = (THR_ALPHA / float(len(nodes) - 1)) * (
                         m_hypothesis / float(ttree.getLeafs().getSize())
                     )
                 else:
@@ -663,20 +663,20 @@ def treeIter(pool, iter, smap, ttree, refs, taxid_start, stop_rank, debug_plot_d
                             pvs[i, j] = 0
                             continue
                         elif (
-                            (matches[nodes[i]] / total_matches_filter)
-                            < min_reference_matches_percent
-                            or matches[nodes[i]] < min_reference_matches_number
-                            or groups[nodes[i]].size < min_group_size
+                                (matches[nodes[i]] / TOTAL_MATCHES_FILTER)
+                                < MIN_REFERENCE_MATCHES_PERCENT
+                                or matches[nodes[i]] < MIN_REFERENCE_MATCHES_NUMBER
+                                or groups[nodes[i]].size < MIN_GROUP_SIZE
                         ):
                             # Not enough matches or groups on the control group - Skip
                             pvs[i, j] = 1
                             rjs[i, j] = 1
                             continue
                         elif (
-                            (matches[nodes[j]] / total_matches_filter)
-                            < min_reference_matches_percent
-                            or matches[nodes[j]] < min_reference_matches_number
-                            or groups[nodes[j]].size < min_group_size
+                                (matches[nodes[j]] / TOTAL_MATCHES_FILTER)
+                                < MIN_REFERENCE_MATCHES_PERCENT
+                                or matches[nodes[j]] < MIN_REFERENCE_MATCHES_NUMBER
+                                or groups[nodes[j]].size < MIN_GROUP_SIZE
                         ):
                             # Not enough matches on the treatment group. This node is identified because the control has enough matches.
                             real_rej = True
@@ -691,7 +691,7 @@ def treeIter(pool, iter, smap, ttree, refs, taxid_start, stop_rank, debug_plot_d
                             continue
                         else:
                             real_rej = True
-                            if threads > 1:
+                            if THREADS > 1:
                                 pool_res[(i, j)] = pool.apply_async(
                                     perm_pval,
                                     args=(
@@ -719,7 +719,7 @@ def treeIter(pool, iter, smap, ttree, refs, taxid_start, stop_rank, debug_plot_d
                                     rjs[i, j] = -1
                 # end for i,j in [(n,i) for i in range(len(nodes))]+[(i,n) for i in range(len(nodes))]
 
-                if threads > 1:
+                if THREADS > 1:
                     if pool_res:
                         for (i, j), res in list(pool_res.items()):
                             pv = res.get()
@@ -812,8 +812,8 @@ def perm_pval(c, t, cv, taxon_id_control, taxon_id_treatment, debug_plot_dir):
     norm_t = np.sort(t)[::-1]  # /float(mx)
 
     # Percentile based only on non-zero values
-    ###cutoff = sum(norm_c>=np.percentile(norm_c[norm_c>0],100-bin_cutoff))
-    cutoff = np.ceil(norm_c[norm_c > 0].size * (float(bin_cutoff) / 100))
+    ###cutoff = sum(norm_c>=np.percentile(norm_c[norm_c>0],100-BIN_CUTOFF))
+    cutoff = np.ceil(norm_c[norm_c > 0].size * (float(BIN_CUTOFF) / 100))
 
     # If the number of groups is greater than the treatment, limit the size on the treatment group (only non-zeros)
     if norm_t[norm_t > 0].size < cutoff:
@@ -827,15 +827,15 @@ def perm_pval(c, t, cv, taxon_id_control, taxon_id_treatment, debug_plot_dir):
     diff_obs = np.mean(norm_c_sub) - np.mean(norm_t_sub)
     combined = np.concatenate([norm_c_sub, norm_t_sub])
 
-    diff_random = np.zeros(permutations)
+    diff_random = np.zeros(PERMUTATIONS)
     np.random.seed()  # re-seed for the threading
-    for n in range(permutations):
+    for n in range(PERMUTATIONS):
         np.random.shuffle(combined)
         diff_random[n] = np.mean(combined[: norm_c_sub.size]) - np.mean(
             combined[norm_c_sub.size :]
         )
 
-    pv = sum(np.greater_equal(diff_random, diff_obs)) / float(permutations)
+    pv = sum(np.greater_equal(diff_random, diff_obs)) / float(PERMUTATIONS)
 
     if DEBUG_PLOTS_DIR:
         plot_bin_scores(
@@ -1151,7 +1151,7 @@ def printBioBoxes(rep, total_abundance_norm, names, sam_file, database_file):
     print("# Taxonomic Profiling Output")
     print(("@SampleID:%s" % sam_file))
     print("@Version:0.9.3")
-    print(("@Ranks:%s" % "".join([r + "|" for r in fixed_ranks])[:-1]))
+    print(("@Ranks:%s" % "".join([r + "|" for r in FIXED_RANKS])[:-1]))
     print(("@TaxonomyID:%s" % database_file))
     print("@@TAXID\tRANK\tTAXPATH\tTAXPATHSN\tPERCENTAGE")
     for r in rep:
