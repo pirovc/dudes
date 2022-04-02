@@ -116,6 +116,12 @@ def main():
         help="Bin size (0-1: percentile from the lengths of all references in the database / >=1: bp). Default: 0.25",
     )
     parser.add_argument(
+        "--no-normalize",
+        action="store_true",
+        help="Do not normalize by total sequence length of all references belonging to an identified TaxID. "
+             "The idea of normalization is to quantify cell number rather than total abundance.",
+    )
+    parser.add_argument(
         "-o",
         metavar="<output_prefix>",
         dest="output_prefix",
@@ -379,7 +385,8 @@ def main():
 
     if ident.getSize():
         # Calculate abundances
-        total_abundance_norm, ident = calcAbundance(ident, ttree, refs, taxid_start)
+        total_abundance_norm, ident = calcAbundance(ident, ttree, refs, taxid_start,
+                                                    normalize_to_sequence_length=not args.no_normalize)
 
         printDebug(DEBUG, ident.ident)
         printDebug(
@@ -1036,14 +1043,14 @@ def filterMaxMatches(smap, max_read_matches, total_matches_all):
         return smap
 
 
-def calcAbundance(ident: Ident, ttree: TTree, refs: Refs, taxid_start):
+def calcAbundance(ident: Ident, ttree: TTree, refs: Refs, taxid_start, normalize_to_sequence_length: bool = True):
     """
     Calculate abundance of identifications.
 
     Calculates individual and cumulative abundance of identifications.
     Calculates individual abundance for each identifications with a MatchScoreSum > 0.
-    Individual abundance is an int and calculated by dividing the identified taxons "MatchScoreSum" by the length of all reference
-    sequences belonging to that taxon, multiplied by 10^9 and rounded.
+    Individual abundance is an int and calculated by (optionally) normalizing the identified taxons "MatchScoreSum" by
+    the length of all reference sequences belonging to that taxon, multiplied by 10^9 and rounded to 0 decimals.
     Writes individual abundance into Ident object column "Abundance".
     Calculates cumulative abundance summing the individual abundance of an identification and all its child taxon IDs.
     Writes cumulative abundance into Ident object column "CumulativeAbundance".
@@ -1056,25 +1063,30 @@ def calcAbundance(ident: Ident, ttree: TTree, refs: Refs, taxid_start):
         ttree: TTree object, containing refid_nodes
         refs: Refs object, containing numeric RefID and its sequence length
         taxid_start: taxonomic Id used to start the analysis
+        normalize_to_sequence_length: divide abundances by the total sequence length of references belonging to a given
+            identified taxID
 
     Returns:
         tuple(total_abundance_norm, Ident)
     """
     # Single abundance
     for id_ in ident.getSubSet(ident.getCol("MatchScoreSum") > 0):
-        lens = sum(
-            # get array of sequence length for all references belonging to identified taxa
-            refs.getSubSet(
-                np.in1d(
-                    refs.getCol("RefID"),
-                    # get refids from ttree for taxids in ids
-                    ttree.getSubSet(ttree.getCol("TaxID") == id_["TaxID"]).getCol(
-                        "RefID"
-                    ),
-                )
-            ).getCol("SeqLen")
-        )
-        abundance = id_["MatchScoreSum"] / float(lens)
+        if normalize_to_sequence_length:
+            lens = sum(
+                # get array of sequence length for all references belonging to identified taxa
+                refs.getSubSet(
+                    np.in1d(
+                        refs.getCol("RefID"),
+                        # get refids from ttree for taxids in ids
+                        ttree.getSubSet(ttree.getCol("TaxID") == id_["TaxID"]).getCol(
+                            "RefID"
+                        ),
+                    )
+                ).getCol("SeqLen")
+            )
+            abundance = id_["MatchScoreSum"] / float(lens)
+        else:
+            abundance = id_["MatchScoreSum"]
         ident.setAbundance(
             id_["Iter"], id_["TaxID"], int(np.round(abundance * 10**9))
         )
