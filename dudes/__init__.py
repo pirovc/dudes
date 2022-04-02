@@ -1,1 +1,3 @@
-VERSION = '0.09'
+from importlib.metadata import version
+
+VERSION = version('dudes')

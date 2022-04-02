@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 import numpy as np
 
+import dudes
 from dudes.database.main import load_refid2taxid_files, get_reference_identifiers, main
 from test.helper_funcs import RESSOURCE_DIR, DUDES_DIR, md5sum, set_directory
 
@@ -39,6 +40,7 @@ def test_DUDesDB(tmp_path):
     args_str = list(map(str, args))
     with set_directory(DUDES_DIR):
         with patch.object(sys, "argv", args_str):
-            main()
+            with patch.object(dudes.database.main, "VERSION", "0.09"):
+                main()
     assert md5sum(produced_db) == md5sum(expected_db), \
         'wrong dudes database file produced'
