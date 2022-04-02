@@ -7,7 +7,7 @@ import sys
 def test_DUDes(tmp_path):
     produced_output = tmp_path / "dudes_profile_output"
     expected_output = RESSOURCE_DIR / "dudes_profile_expected_output_on_sampledata.out"
-    args = [str(DUDES_DIR / "DUDes.py"),
+    args = ["dudes",
             "-s", str(SAMPLEDATA_DIR.relative_to(DUDES_DIR) / "hiseq_accuracy_k60.sam"),
             "-d", str(SAMPLEDATA_DIR.relative_to(DUDES_DIR) / "arc-bac_refseq-cg_201503.npz"),
             "-o", str(produced_output)

@@ -154,6 +154,7 @@ def main():
     sys.stdout.write("- - - - - - - - - - - - - - - - - - - - -\n")
     sys.stdout.write("|\t\tDUDes %s\t\t|\n" % version)
     sys.stdout.write("- - - - - - - - - - - - - - - - - - - - -\n")
+    sys.stdout.write(f"Called with = {' '.join(sys.argv)}\n")
     sys.stdout.write("Output prefix = %s\n" % args.output_prefix)
     sys.stdout.write("SAM (format) = %s (%s)\n" % (args.sam_file, args.sam_format))
     sys.stdout.write("Database = %s\n" % args.database_file)
