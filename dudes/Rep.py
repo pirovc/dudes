@@ -1,20 +1,22 @@
 import numpy as np
 from collections import defaultdict
-from dudes.Util import *
+
+from dudes.Ident import Ident
+from dudes.Util import getIndexRank
 
 
 class Rep:
     columns = ["TaxID", "ParentTaxID", "RankID", "Abundance"]
 
     def __init__(self, mat=None):
-        self.cols = {c: i for i, c in enumerate(Rep.columns)}
+        self.cols = {c: i for i, c in enumerate(self.columns)}
         self.rep = []
-        if not mat is None:
+        if mat is not None:
             self.rep = np.array(mat, ndmin=2)
 
     def __iter__(self):
         for v in self.rep:
-            yield {c: v[i] for i, c in enumerate(Rep.columns)}
+            yield {c: v[i] for i, c in enumerate(self.columns)}
 
     def getSize(self):
         return len(self.rep)
@@ -25,21 +27,38 @@ class Rep:
     def getSubSet(self, ind):
         return Rep(self.rep[ind])
 
-    def setRepresentatives(self, ident, last_rank):
-        # Sum abundances iterations
+    def setRepresentatives(self, ident: Ident, last_rank: str):
+        """Select representatives from the identification for output.
+
+        Initialize self.rep with the columns TaxID, ParentTaxID, RankID, Abundance.
+        Self.rep contains each TaxIDs with Abundance > 0 exactly once.
+        Abundance is the cumulative abundance across all iterations for TaxIDs above (more coarse) than strain rank.
+        For strain rank, abundance is the non-cumulative abundance of this rank identification (because of the intra-strains)
+        Self.rep is sorted by rank (from coarse to fine) and abundance (high to low).
+        Identifications with zero abundance are removed.
+
+        Args:
+            ident: Ident object
+            last_rank: name of the last rank to consider
+
+        Returns: None
+        """
+        # Sum of TaxID abundances over all iterations
         abundances_iter = defaultdict(float)
         for id in ident:
             abundances_iter[id["TaxID"]] += id["CumulativeAbundance"]
 
         # Set representatives for output
+        rep_list = []
         for ids in ident.getSubSet(np.unique(ident.getCol("TaxID"), True)[1]):
-            # Chose single abundance for strain level and summed cumulative abundance for lower levels (because of the intra-strains)
+            # Chose single abundance for strain level and summed cumulative abundance for lower levels (because of
+            # the intra-strains)
             if ids["RankID"] >= getIndexRank("strain"):
                 ab = ids["Abundance"]
             else:
                 ab = abundances_iter[ids["TaxID"]]
-            self.rep.append([ids["TaxID"], ids["ParentTaxID"], ids["RankID"], ab])
-        self.rep = np.array(self.rep, dtype=int)
+            rep_list.append([ids["TaxID"], ids["ParentTaxID"], ids["RankID"], ab])
+        self.rep = np.array(rep_list, dtype=int)
 
         if last_rank == "strain":
             # Fix the multi-level strains (bind them to the species level)
