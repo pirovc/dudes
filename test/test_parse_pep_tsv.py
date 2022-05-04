@@ -10,29 +10,29 @@ from dudes.parse_pep_tsv import (
     build_dfs,
     get_uniparc_to_uniprot_acc_map
 )
-from test.helper_funcs import RESSOURCE_DIR
+from test.helper_funcs import RESOURCE_DIR
 
 # make pandas autodetect the terminal window size
 pd.options.display.width = 0
 
 
 def test_read_peptide_tsv():
-    pep2ref = Peptide2ReferenceTable(RESSOURCE_DIR / "peptide.tsv")
-    # pep2ref.df.to_csv(RESSOURCE_DIR / "pep2acc.csv")
+    pep2ref = Peptide2ReferenceTable(RESOURCE_DIR / "peptide.tsv")
+    # pep2ref.df.to_csv(RESOURCE_DIR / "pep2acc.csv")
     expected_df = pd.read_csv(
-        RESSOURCE_DIR / "pep2acc.csv", converters={"Proteins": eval},
+        RESOURCE_DIR / "pep2acc.csv", converters={"Proteins": eval},
         index_col="Peptide"
     )
     pd.testing.assert_frame_equal(pep2ref.df, expected_df)
 
 
 def test_get_set_of_accs_from_pep_df():
-    from .ressource.parse_pep_data import (
+    from .resource.parse_pep_data import (
         expected_acc_set_get_set_of_accs_from_pep_df as expected_set,
     )
     pep2ref = Peptide2ReferenceTable(
         pep2ref_df=pd.read_csv(
-            RESSOURCE_DIR / "pep2acc.csv", converters={"Proteins": eval}, index_col="Peptide"
+            RESOURCE_DIR / "pep2acc.csv", converters={"Proteins": eval}, index_col="Peptide"
         )
     )
     produced_set = pep2ref.get_all_accs()
@@ -43,7 +43,7 @@ def test_get_set_of_accs_from_pep_df():
 
 
 def test_get_peptides_matching_acc():
-    df = pd.read_csv(RESSOURCE_DIR / "pep2acc.csv", converters={"Proteins": eval}, index_col="Peptide")
+    df = pd.read_csv(RESOURCE_DIR / "pep2acc.csv", converters={"Proteins": eval}, index_col="Peptide")
     expected_peps = {"AAAAGFEK", "AAEYMTHAPLGSLNSVGGVATEINAVNFVSPR"}
     pep2ref = Peptide2ReferenceTable(pep2ref_df=df)
     res = pep2ref.get_peptides_matching_acc("UPI0000132624")
@@ -51,19 +51,19 @@ def test_get_peptides_matching_acc():
 
 
 def test_get_pep_id():
-    df = pd.read_csv(RESSOURCE_DIR / "pep2acc.csv", converters={"Proteins": eval}, index_col="Peptide")
+    df = pd.read_csv(RESOURCE_DIR / "pep2acc.csv", converters={"Proteins": eval}, index_col="Peptide")
     pep2ref = Peptide2ReferenceTable(pep2ref_df=df)
     assert pep2ref.get_pep_id("AAAEDAGLPLYR") == 9
 
 
 def test_get_pep_score():
-    df = pd.read_csv(RESSOURCE_DIR / "pep2acc.csv", converters={"Proteins": eval}, index_col="Peptide")
+    df = pd.read_csv(RESOURCE_DIR / "pep2acc.csv", converters={"Proteins": eval}, index_col="Peptide")
     pep2ref = Peptide2ReferenceTable(pep2ref_df=df)
     assert pep2ref.get_pep_score("AAAEDAGLPLYR") == 9997
 
 
 def test_get_sequence_for_accession():
-    fasta_path = RESSOURCE_DIR / "uniprot_sprot-head.fasta"
+    fasta_path = RESOURCE_DIR / "uniprot_sprot-head.fasta"
     fasta_obj = FastaExtension(fasta_path, key_function=lambda x: x.split("|")[1])
 
     assert (
@@ -77,7 +77,7 @@ def test_get_sequence_for_accession():
 
 
 def test_get_length_of_reference_sequence():
-    fasta_path = RESSOURCE_DIR / "uniprot_sprot-head.fasta"
+    fasta_path = RESOURCE_DIR / "uniprot_sprot-head.fasta"
     fasta_obj = FastaExtension(fasta_path, key_function=lambda x: x.split("|")[1])
     assert fasta_obj.get_length_of_reference_sequence("Q6GZX4") == 256
 
@@ -87,7 +87,7 @@ def test_get_peptide_start_pos_in_protein_sequence():
 
 
 def test_get_swissprot_accs_matching_uniparc_accs():
-    id_file = RESSOURCE_DIR / "idmapping_uniparc-test.tsv"
+    id_file = RESOURCE_DIR / "idmapping_uniparc-test.tsv"
     up_accs = ["UPI000012529B", "UPI00017B9579"]
     expected = {
         "UPI000012529B": {
@@ -118,14 +118,14 @@ def test_get_swissprot_accs_matching_uniparc_accs():
 
 @pytest.mark.xfail
 def test_get_uniparc_to_ref_id_map():
-    from .ressource.parse_pep_data import (
+    from .resource.parse_pep_data import (
         expected_acc_set_get_set_of_accs_from_pep_df as up_accs,
     )
 
     # print("\n", "|".join(up_accs))
-    npzfile = np.load(RESSOURCE_DIR / "dudesdb.npz", allow_pickle=True)
+    npzfile = np.load(RESOURCE_DIR / "dudesdb.npz", allow_pickle=True)
     refids_lookup = npzfile["refids_lookup"].item()
-    id_mapping_file = RESSOURCE_DIR / "idmapping_uniparc-test.tsv"
+    id_mapping_file = RESOURCE_DIR / "idmapping_uniparc-test.tsv"
     produced_dict = get_uniparc_to_ref_id_map(up_accs, id_mapping_file, refids_lookup)
     print(produced_dict)
     assert False
@@ -133,11 +133,11 @@ def test_get_uniparc_to_ref_id_map():
 
 def test_build_dfs():
     print("\n")
-    fasta = RESSOURCE_DIR / "uniparc_filtered.fasta"
-    idmapping_file = RESSOURCE_DIR / "idmapping_uniparc-test.tsv"
+    fasta = RESOURCE_DIR / "uniparc_filtered.fasta"
+    idmapping_file = RESOURCE_DIR / "idmapping_uniparc-test.tsv"
     pep2ref = Peptide2ReferenceTable(
         pep2ref_df=pd.read_csv(
-            RESSOURCE_DIR / "pep2acc.csv", converters={"Proteins": eval}, index_col="Peptide"
+            RESOURCE_DIR / "pep2acc.csv", converters={"Proteins": eval}, index_col="Peptide"
         )
     )
     uprc2uprt = get_uniparc_to_uniprot_acc_map(pep2ref.get_all_accs(), idmapping_file)

@@ -3,7 +3,7 @@ import os
 from contextlib import contextmanager
 from pathlib import Path
 
-RESSOURCE_DIR = Path(os.path.dirname(__file__)) / "ressource"
+RESOURCE_DIR = Path(os.path.dirname(__file__)) / "resource"
 DUDES_DIR = Path(os.path.dirname(__file__)).parent
 SAMPLEDATA_DIR = DUDES_DIR / "sampledata"
 
