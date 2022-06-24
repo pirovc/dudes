@@ -1,12 +1,35 @@
+from collections import defaultdict
+from os import PathLike
+from typing import Union
+
 import numpy as np
 import pandas as pd
+from pandas import DataFrame
 
 
 def parse_uniprot_accession(raw_accession):
     return raw_accession.split("|")[1]
 
 
-def read_blast_tsv(f):
+def read_blast_tsv(f: Union[str, PathLike[str]]) -> DataFrame:
+    """Read blast output file into dataframe.
+
+    The sseqid column is converted to uniprot accession format ("sp|wasdef|bar" -> "wasdef")
+
+    The dataframe has the following columns:
+    - qseqid: object, Query Seq - id
+    - sseqid: object, Subject Seq - id
+    - slen: int, Subject sequence length
+    - sstart: int, Start of alignment in query
+    - cigar: object, CIGAR string
+    - pident: float, Percentage of identical matches
+
+    Args:
+        f: path to blast output file
+
+    Returns:
+        pandas DataFrame
+    """
     dtypes = {
         "qseqid": object,
         "sseqid": object,
@@ -56,4 +79,11 @@ def parse_blast_df_into_sam_array(blast_df: pd.DataFrame, refid_lookup: dict[str
               - 2: int, 'MatchScore': score of the match
               - 3: int, 'ReadID': ID of the read
     """
-    pass
+    read_id_lookup = defaultdict(lambda: len(read_id_lookup))
+    sam = blast_df.apply(lambda row: [
+        refid_lookup[row["sseqid"]],
+        row["sstart"],
+        # compute_score(row["cigar"]),
+        read_id_lookup["qseqid"]
+    ], axis=1)
+    return np.concatenate(sam)
