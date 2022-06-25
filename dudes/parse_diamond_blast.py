@@ -65,7 +65,7 @@ def parse_reference_lengths(blast_df: pd.DataFrame, refid_lookup: dict[str, int]
     return df[["refid", "slen"]].to_numpy()
 
 
-def parse_blast_df_into_sam_array(blast_df: pd.DataFrame, refid_lookup: dict[str, int]) -> np.array:
+def transform_blast_df_into_sam_array(blast_df: pd.DataFrame, refid_lookup: dict[str, int]) -> np.array:
     """Build query array.
 
     Args:
@@ -80,10 +80,10 @@ def parse_blast_df_into_sam_array(blast_df: pd.DataFrame, refid_lookup: dict[str
               - 3: int, 'ReadID': ID of the read
     """
     read_id_lookup = defaultdict(lambda: len(read_id_lookup))
-    sam = blast_df.apply(lambda row: [
+    sam_series = blast_df.apply(lambda row: [
         refid_lookup[row["sseqid"]],
         row["sstart"],
         # compute_score(row["cigar"]),
         read_id_lookup["qseqid"]
     ], axis=1)
-    return np.concatenate(sam)
+    return np.stack(sam_series)

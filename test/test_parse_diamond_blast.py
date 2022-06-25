@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 
 from dudes.parse_diamond_blast import read_blast_tsv, parse_uniprot_accession, parse_reference_lengths, \
-    parse_blast_df_into_sam_array
+    transform_blast_df_into_sam_array
 
 
 @pytest.fixture
@@ -33,9 +33,10 @@ def test_parse_reference_lengths():
     np.testing.assert_array_equal(returned, expected)
 
 
-def test_parse_blast_df_into_sam_array(blast_df):
+def test_transform_blast_df_into_sam_array(blast_df):
     refid_lookup = {refid: i for i, refid in enumerate(blast_df["sseqid"].unique())}
-    sam_array = parse_blast_df_into_sam_array(blast_df, refid_lookup)
+    sam_array = transform_blast_df_into_sam_array(blast_df, refid_lookup)
     print(sam_array)
     assert isinstance(sam_array, np.ndarray)
-    # assert sam_array.shape[1] == 4
+    assert sam_array.shape[1] == 3
+    # assert sam_array.shape[1] == 4, "Missing Score column in sam array"
