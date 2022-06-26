@@ -84,6 +84,6 @@ def transform_blast_df_into_sam_array(blast_df: pd.DataFrame, refid_lookup: dict
         refid_lookup[row["sseqid"]],
         row["sstart"],
         # compute_score(row["cigar"]),
-        read_id_lookup["qseqid"]
+        read_id_lookup[row["qseqid"]]
     ], axis=1)
     return np.stack(sam_series)
