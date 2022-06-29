@@ -4,6 +4,8 @@ import multiprocessing as mp
 from itertools import islice
 from collections import defaultdict
 
+from dudes.calculate_match_score import calculate_match_score
+
 nm_regex = re.compile("NM:i:[0-9]*")
 
 
@@ -29,16 +31,13 @@ def parse_lines(lines):
         fields = l.split("\t")
         # read, _, ref_acc, 1-based-leftmost-mapping-position, _. CIGAR-string, *_
         if fields[2] != "*":  # reference accesion
-            cig = {"I": 0, "D": 0, "M": 0}
-            for val, ci in re.findall(r"(\d+)([IDM])", fields[5]):
-                cig[ci] += int(val)
+            edit_distance = int(nm_regex.search(l).group()[5:])
             sam[c, 0] = refids_lookup.get(
                 refid_regex.search(fields[2]).group()[slice:], -1
             )  # refid code from lookup (gi or av) or -1
             sam[c, 1] = int(fields[3])  # POS
-            sam[c, 2] = (cig["M"] + cig["I"]) - (
-                int(nm_regex.search(l).group()[5:]) + cig["D"] + cig["I"]
-            )  # MATCHES -> LEN - (NM + INDELS)
+            # MATCH Score -> LEN - (NM + INDELS)
+            sam[c, 2] = calculate_match_score(cigar_string=fields[5], edit_distance=edit_distance)
             reads.append(fields[0])
             c = c + 1
     return sam[:c, :], reads
