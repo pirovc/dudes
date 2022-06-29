@@ -36,7 +36,8 @@ def read_blast_tsv(f: Union[str, PathLike[str]]) -> DataFrame:
         "slen": int,
         "sstart": int,
         "cigar": object,
-        "pident": float
+        "pident": float,
+        "mismatch": int,
     }
     df = pd.read_table(
         f,

@@ -8,12 +8,13 @@ from dudes.parse_diamond_blast import read_blast_tsv, parse_uniprot_accession, p
 
 @pytest.fixture
 def blast_df(resource_dir):
-    return read_blast_tsv(resource_dir / "diamond_blast-qseqid-sseqid-slen-sstart-cigar-pident.tsv")
+    return read_blast_tsv(resource_dir / "diamond_blast-qseqid-sseqid-slen-sstart-cigar-pident-mismatch.tsv")
 
 
 def test_read_into_dataframe(resource_dir):
-    returned = read_blast_tsv(resource_dir / "diamond_blast-qseqid-sseqid-slen-sstart-cigar-pident.tsv")
+    returned = read_blast_tsv(resource_dir / "diamond_blast-qseqid-sseqid-slen-sstart-cigar-pident-mismatch.tsv")
     assert isinstance(returned, pd.DataFrame)
+    assert returned.columns.values.tolist() == ["qseqid", "sseqid", "slen", "sstart", "cigar", "pident", "mismatch"]
 
 
 def test_parse_uniprot_accession():
