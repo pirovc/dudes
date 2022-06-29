@@ -6,6 +6,8 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 
+from dudes.calculate_match_score import calculate_match_score
+
 
 def parse_uniprot_accession(raw_accession):
     return raw_accession.split("|")[1]
@@ -84,6 +86,7 @@ def transform_blast_df_into_sam_array(blast_df: pd.DataFrame, refid_lookup: dict
     sam_series = blast_df.apply(lambda row: [
         refid_lookup[row["sseqid"]],
         row["sstart"],
+        calculate_match_score(cigar_string=row["cigar"], mismatches=row["mismatch"]),
         # compute_score(row["cigar"]),
         read_id_lookup[row["qseqid"]]
     ], axis=1)
