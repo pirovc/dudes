@@ -33,7 +33,7 @@ def parse_lines(lines):
         if fields[2] != "*":  # reference accesion
             edit_distance = int(NM_REGEX.search(l).group()[5:])
             sam[c, 0] = REFIDS_LOOKUP.get(
-                REFID_REGEX.search(fields[2]).group()[SLICE:], -1
+                REFID_REGEX.search(fields[2]).group(1), -1
             )  # refid code from lookup (gi or av) or -1
             sam[c, 1] = int(fields[3])  # POS
             # MATCH Score -> LEN - (NM + INDELS)
@@ -54,7 +54,7 @@ def parse_lines_extended(lines):
             for val, ci in re.findall(r"(\d+)([IDM=X])", fields[5]):
                 cig[ci] += int(val)
             sam[c, 0] = REFIDS_LOOKUP.get(
-                REFID_REGEX.search(fields[2]).group()[SLICE:], -1
+                REFID_REGEX.search(fields[2]).group(1), -1
             )  # refid code from lookup (gi or av) or -1
             sam[c, 1] = int(fields[3])  # POS
             sam[c, 2] = (cig["X"] + cig["="] + cig["M"] + cig["I"]) - (
@@ -88,17 +88,14 @@ def parse_sam(sam_file, sam_format, rl, reference_mode, threads):
 
     global REFIDS_LOOKUP
     global REFID_REGEX
-    global SLICE
 
     # Global refids lookup
     REFIDS_LOOKUP = rl
 
     if reference_mode == "gi":
-        REFID_REGEX = re.compile(r"gi\|[0-9]*")
-        SLICE = 3
+        REFID_REGEX = re.compile(r"gi\|(\d*)")
     else:
-        REFID_REGEX = re.compile(r"[A-Z0-9_\.]*")  # without ">" from fasta regex
-        SLICE = 0
+        REFID_REGEX = re.compile(r"([A-Z\d_.]*)")  # without ">" from fasta regex
 
     refs = []
     reads = defaultdict(lambda: len(reads))
@@ -121,7 +118,7 @@ def parse_sam(sam_file, sam_format, rl, reference_mode, threads):
             refs.append(
                 [
                     REFIDS_LOOKUP.get(
-                        REFID_REGEX.search(fields[1][3:]).group()[SLICE:], -1
+                        REFID_REGEX.search(fields[1][3:]).group(1), -1
                     ),
                     int(fields[2][3:]),
                 ]
