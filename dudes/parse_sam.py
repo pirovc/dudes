@@ -6,7 +6,7 @@ from collections import defaultdict
 
 from dudes.calculate_match_score import calculate_match_score
 
-nm_regex = re.compile("NM:i:[0-9]*")
+NM_REGEX = re.compile("NM:i:[0-9]*")
 
 
 def parse_lines(lines):
@@ -31,9 +31,9 @@ def parse_lines(lines):
         fields = l.split("\t")
         # read, _, ref_acc, 1-based-leftmost-mapping-position, _. CIGAR-string, *_
         if fields[2] != "*":  # reference accesion
-            edit_distance = int(nm_regex.search(l).group()[5:])
-            sam[c, 0] = refids_lookup.get(
-                refid_regex.search(fields[2]).group()[slice:], -1
+            edit_distance = int(NM_REGEX.search(l).group()[5:])
+            sam[c, 0] = REFIDS_LOOKUP.get(
+                REFID_REGEX.search(fields[2]).group()[SLICE:], -1
             )  # refid code from lookup (gi or av) or -1
             sam[c, 1] = int(fields[3])  # POS
             # MATCH Score -> LEN - (NM + INDELS)
@@ -53,8 +53,8 @@ def parse_lines_extended(lines):
             cig = {"I": 0, "D": 0, "M": 0, "=": 0, "X": 0}
             for val, ci in re.findall(r"(\d+)([IDM=X])", fields[5]):
                 cig[ci] += int(val)
-            sam[c, 0] = refids_lookup.get(
-                refid_regex.search(fields[2]).group()[slice:], -1
+            sam[c, 0] = REFIDS_LOOKUP.get(
+                REFID_REGEX.search(fields[2]).group()[SLICE:], -1
             )  # refid code from lookup (gi or av) or -1
             sam[c, 1] = int(fields[3])  # POS
             sam[c, 2] = (cig["X"] + cig["="] + cig["M"] + cig["I"]) - (
@@ -86,19 +86,19 @@ def parse_sam(sam_file, sam_format, rl, reference_mode, threads):
             - 1: int, LN attribute of reference
     """
 
-    global refids_lookup
-    global refid_regex
-    global slice
+    global REFIDS_LOOKUP
+    global REFID_REGEX
+    global SLICE
 
     # Global refids lookup
-    refids_lookup = rl
+    REFIDS_LOOKUP = rl
 
     if reference_mode == "gi":
-        refid_regex = re.compile(r"gi\|[0-9]*")
-        slice = 3
+        REFID_REGEX = re.compile(r"gi\|[0-9]*")
+        SLICE = 3
     else:
-        refid_regex = re.compile(r"[A-Z0-9_\.]*")  # without ">" from fasta regex
-        slice = 0
+        REFID_REGEX = re.compile(r"[A-Z0-9_\.]*")  # without ">" from fasta regex
+        SLICE = 0
 
     refs = []
     reads = defaultdict(lambda: len(reads))
@@ -120,8 +120,8 @@ def parse_sam(sam_file, sam_format, rl, reference_mode, threads):
             # 2. LN attribute: reference sequence length
             refs.append(
                 [
-                    refids_lookup.get(
-                        refid_regex.search(fields[1][3:]).group()[slice:], -1
+                    REFIDS_LOOKUP.get(
+                        REFID_REGEX.search(fields[1][3:]).group()[SLICE:], -1
                     ),
                     int(fields[2][3:]),
                 ]
@@ -137,7 +137,7 @@ def parse_sam(sam_file, sam_format, rl, reference_mode, threads):
     res = []
 
     # Check for NM flag
-    if sam_format == "nm" and not nm_regex.search(first_aln_line):
+    if sam_format == "nm" and not NM_REGEX.search(first_aln_line):
         print(
             "\n -- Warning: NM flag not found. Switching to extended CIGAR mode (-i 'ex')"
         )
