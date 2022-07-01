@@ -46,98 +46,7 @@ def main():
     global MIN_GROUP_SIZE
     global BIN_SIZE
 
-    parser = argparse.ArgumentParser(prog="DUDes.py")
-    parser.add_argument(
-        "-s",
-        required=True,
-        metavar="<sam_file>",
-        dest="sam_file",
-        help="Alignment/mapping file in SAM format. DUDes does not depend on any specific read mapper, but it requires header information (@SQ SN:gi|556555098|ref|NC_022650.1| LN:55956) and mismatch information (check -i)",
-    )
-    parser.add_argument(
-        "-d",
-        required=True,
-        metavar="<database_file>",
-        dest="database_file",
-        help="Database file (output from DUDesDB [.npz])",
-    )
-    parser.add_argument(
-        "-i",
-        metavar="<sam_format>",
-        dest="sam_format",
-        default="nm",
-        help="SAM file format ['nm': sam file with standard cigar string plus NM flag (NM:i:[0-9]*) for mismatches count | 'ex': just the extended cigar string]. Default: 'nm'",
-    )
-    parser.add_argument(
-        "-t",
-        metavar="<threads>",
-        dest="threads",
-        type=int,
-        default=1,
-        help="# of threads. Default: 1",
-    )
-    parser.add_argument(
-        "-x",
-        metavar="<taxid_start>",
-        dest="taxid_start",
-        type=int,
-        default=1,
-        help="Taxonomic Id used to start the analysis (1 = root). Default: 1",
-    )
-    parser.add_argument(
-        "-m",
-        metavar="<max_read_matches>",
-        dest="max_read_matches",
-        type=float,
-        default=0,
-        help="Keep reads up to this number/percentile of matches (0: off / 0-1: percentile / >=1: match count). Default: 0",
-    )
-    parser.add_argument(
-        "-a",
-        metavar="<min_reference_matches>",
-        dest="min_reference_matches",
-        type=float,
-        default=0.001,
-        help="Minimum number/percentage of supporting matches to consider the reference (0: off / 0-1: percentage / >=1: read number). Default: 0.001",
-    )
-    parser.add_argument(
-        "-l",
-        metavar="<last_rank>",
-        dest="last_rank",
-        default="species",
-        help="Last considered rank [" + ",".join(Ranks.ranks) + "]. Default: 'species'",
-    )
-    parser.add_argument(
-        "-b",
-        metavar="<bin_size>",
-        dest="bin_size",
-        type=float,
-        default=0.25,
-        help="Bin size (0-1: percentile from the lengths of all references in the database / >=1: bp). Default: 0.25",
-    )
-    parser.add_argument(
-        "--no-normalize",
-        action="store_true",
-        help="Do not normalize by total sequence length of all references belonging to an identified TaxID. "
-             "The idea of normalization is to quantify cell number rather than total abundance.",
-    )
-    parser.add_argument(
-        "-o",
-        metavar="<output_prefix>",
-        dest="output_prefix",
-        default="",
-        help="Output prefix. Default: STDOUT",
-    )
-    parser.add_argument(
-        "--debug", action="store_true", help="print debug info to STDERR"
-    )
-    parser.add_argument(
-        "--debug_plots_dir",
-        default="",
-        help="path to directory for writing debug plots to.",
-    )
-    parser.add_argument("-v", action="version", version="%(prog)s " + version)
-    args = parser.parse_args()
+    args = parse_args(version)
 
     # Constants
     THREADS = args.threads
@@ -461,6 +370,102 @@ def main():
     sys.stdout.write(
         "Total elapsed time: " + str(time.time() - total_tx) + " seconds\n"
     )
+
+
+def parse_args(version):
+    parser = argparse.ArgumentParser(prog="DUDes.py")
+    parser.add_argument(
+        "-s",
+        required=True,
+        metavar="<sam_file>",
+        dest="sam_file",
+        help="Alignment/mapping file in SAM format. DUDes does not depend on any specific read mapper, but it requires header information (@SQ SN:gi|556555098|ref|NC_022650.1| LN:55956) and mismatch information (check -i)",
+    )
+    parser.add_argument(
+        "-d",
+        required=True,
+        metavar="<database_file>",
+        dest="database_file",
+        help="Database file (output from DUDesDB [.npz])",
+    )
+    parser.add_argument(
+        "-i",
+        metavar="<sam_format>",
+        dest="sam_format",
+        default="nm",
+        help="SAM file format ['nm': sam file with standard cigar string plus NM flag (NM:i:[0-9]*) for mismatches count | 'ex': just the extended cigar string]. Default: 'nm'",
+    )
+    parser.add_argument(
+        "-t",
+        metavar="<threads>",
+        dest="threads",
+        type=int,
+        default=1,
+        help="# of threads. Default: 1",
+    )
+    parser.add_argument(
+        "-x",
+        metavar="<taxid_start>",
+        dest="taxid_start",
+        type=int,
+        default=1,
+        help="Taxonomic Id used to start the analysis (1 = root). Default: 1",
+    )
+    parser.add_argument(
+        "-m",
+        metavar="<max_read_matches>",
+        dest="max_read_matches",
+        type=float,
+        default=0,
+        help="Keep reads up to this number/percentile of matches (0: off / 0-1: percentile / >=1: match count). Default: 0",
+    )
+    parser.add_argument(
+        "-a",
+        metavar="<min_reference_matches>",
+        dest="min_reference_matches",
+        type=float,
+        default=0.001,
+        help="Minimum number/percentage of supporting matches to consider the reference (0: off / 0-1: percentage / >=1: read number). Default: 0.001",
+    )
+    parser.add_argument(
+        "-l",
+        metavar="<last_rank>",
+        dest="last_rank",
+        default="species",
+        help="Last considered rank [" + ",".join(Ranks.ranks) + "]. Default: 'species'",
+    )
+    parser.add_argument(
+        "-b",
+        metavar="<bin_size>",
+        dest="bin_size",
+        type=float,
+        default=0.25,
+        help="Bin size (0-1: percentile from the lengths of all references in the database / >=1: bp). Default: 0.25",
+    )
+    parser.add_argument(
+        "--no-normalize",
+        action="store_true",
+        help="Do not normalize by total sequence length of all references belonging to an identified TaxID. "
+             "The idea of normalization is to quantify cell number rather than total abundance.",
+    )
+    parser.add_argument(
+        "-o",
+        metavar="<output_prefix>",
+        dest="output_prefix",
+        default="",
+        help="Output prefix. Default: STDOUT",
+    )
+    parser.add_argument(
+        "--debug", action="store_true", help="print debug info to STDERR"
+    )
+    parser.add_argument(
+        "--debug_plots_dir",
+        default="",
+        help="path to directory for writing debug plots to.",
+    )
+    parser.add_argument("-v", action="version", version="%(prog)s " + version)
+    args = parser.parse_args()
+    return args
 
 
 def strainIdent(pool, iter, smap_species, ttree, refs, taxid_species, debug_plot_dir):
