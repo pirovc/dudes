@@ -62,8 +62,8 @@ def parse_reference_lengths(blast_df: pd.DataFrame, refid_lookup: dict[str, int]
         reference sequence
     """
 
-    df = blast_df.drop_duplicates(subset=["sseqid"])
-    df["refid"] = df["sseqid"].apply(lambda x: refid_lookup.get(x, -1))
+    df = blast_df.drop_duplicates(subset=["sseqid"]).copy()
+    df.loc[:, "refid"] = df["sseqid"].apply(lambda x: refid_lookup.get(x, -1))
     df = df[df["refid"] != -1]
     return df[["refid", "slen"]].to_numpy()
 
