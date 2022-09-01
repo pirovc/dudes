@@ -91,3 +91,28 @@ def transform_blast_df_into_sam_array(blast_df: pd.DataFrame, refid_lookup: dict
         read_id_lookup[row["qseqid"]]
     ], axis=1)
     return np.stack(sam_series)
+
+
+def parse_custom_blast(custom_blast_file: str, refid_lookup: dict[str, int], threads: int):
+    """Read custom BLAST file into two arrays.
+
+    Args:
+        custom_blast_file: path to custom blast file
+        refid_lookup: dictionary, key: source reference IDs, value: internal reference ID (int)
+        threads: number of threads
+
+    Returns:
+        numpy.array, numpy.array:
+            first array: 4 columns:
+                - 0: int, 'RefID': matched reference ID in 'refid_lookup' dict
+                - 1: int, 'MatchPosStart': start position of match in reference sequence
+                - 2: int, 'MatchScore': score of the match
+                - 3: int, 'ReadID': ID of the read
+            second array: 2 columns
+                - 0: int, dudes internal id for the reference accession
+                - 1: int, length of the reference
+    """
+    blast_df = read_blast_tsv(custom_blast_file)
+    reference_lengths = parse_reference_lengths(blast_df, refid_lookup)
+    sam_array = transform_blast_df_into_sam_array(blast_df, refid_lookup)
+    return sam_array, reference_lengths
