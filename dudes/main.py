@@ -107,8 +107,8 @@ def main():
     # Load sam file
     sys.stdout.write("Loading sam file ...")
     tx = time.time()
-    if reference_mode == "up":
-        pep_npzfile = np.load(args.sam_file, allow_pickle=True)
+    if args.npz_file:
+        pep_npzfile = np.load(args.npz_file, allow_pickle=True)
         sam = pep_npzfile["reads"]
         ref = pep_npzfile["reference_lengths"]
     elif args.custom_blast_file:
@@ -389,9 +389,14 @@ def parse_args(version):
         metavar="<custom_blast_file>",
         dest="custom_blast_file",
         help="Alignment/mapping file in custom BLAST format. The required columns and their order are: "
-             "'qseqid', 'sseqid', 'slen', 'sstart', 'cigar', 'pident', 'mismatch'."
-             "DUDes does not depend on any specific read mapper, but it requires header information "
-             "(@SQ SN:gi|556555098|ref|NC_022650.1| LN:55956) and mismatch information (check -i)",
+             "'qseqid', 'sseqid', 'slen', 'sstart', 'cigar', 'pident', 'mismatch'.",
+    )
+    input_group.add_argument(
+        "-n",
+        metavar="<npz_file>",
+        dest="npz_file",
+        help="Numpy npz file containing the arrays 'reads' and 'reference_lengths' matching the dudes internal 'sam' "
+             "and 'ref' arrays. Created using 'dudes-parse-peptides'.",
     )
     parser.add_argument(
         "-d",
