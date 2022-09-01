@@ -374,13 +374,22 @@ def main():
 
 def parse_args(version):
     parser = argparse.ArgumentParser(prog="DUDes.py")
-    parser.add_argument(
+    input_group = parser.add_mutually_exclusive_group(required=True)
+    input_group.add_argument(
         "-s",
-        required=True,
         metavar="<sam_file>",
         dest="sam_file",
         help="Alignment/mapping file in SAM format. DUDes does not depend on any specific read mapper, but it requires header information (@SQ SN:gi|556555098|ref|NC_022650.1| LN:55956) and mismatch information (check -i)",
     )
+    # input_group.add_argument(
+    #     "-c",
+    #     metavar="<custom_blast_file>",
+    #     dest="custom_blast_file",
+    #     help="Alignment/mapping file in custom BLAST format. The required columns and their order are: "
+    #          "'qseqid', 'sseqid', 'slen', 'sstart', 'cigar', 'pident', 'mismatch'."
+    #          "DUDes does not depend on any specific read mapper, but it requires header information "
+    #          "(@SQ SN:gi|556555098|ref|NC_022650.1| LN:55956) and mismatch information (check -i)",
+    # )
     parser.add_argument(
         "-d",
         required=True,
