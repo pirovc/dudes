@@ -67,7 +67,7 @@ def parse_lines_extended(lines):
 
 def parse_sam(sam_file, sam_format, rl, reference_mode, threads):
     """
-    read sam file into two arrays
+    Read sam file into two arrays.
 
     :param sam_file: path to sam file
     :param sam_format: 'nm' or 'ex', SAM file format ['nm': sam file with standard
