@@ -17,6 +17,7 @@ from dudes.Rep import Rep
 from dudes.SMap import SMap
 from dudes.TTree import TTree
 from dudes.Util import group_max, printDebug, getIndexRank, getNameRank
+from dudes.parse_diamond_blast import parse_custom_blast
 from dudes.parse_sam import parse_sam
 
 np.set_printoptions(
@@ -110,6 +111,8 @@ def main():
         pep_npzfile = np.load(args.sam_file, allow_pickle=True)
         sam = pep_npzfile["reads"]
         ref = pep_npzfile["reference_lengths"]
+    elif args.custom_blast_file:
+        sam, ref = parse_custom_blast(args.custom_blast_file, refids_lookup, THREADS)
     else:
         sam, ref = parse_sam(
             args.sam_file, args.sam_format, refids_lookup, reference_mode, THREADS
@@ -381,15 +384,15 @@ def parse_args(version):
         dest="sam_file",
         help="Alignment/mapping file in SAM format. DUDes does not depend on any specific read mapper, but it requires header information (@SQ SN:gi|556555098|ref|NC_022650.1| LN:55956) and mismatch information (check -i)",
     )
-    # input_group.add_argument(
-    #     "-c",
-    #     metavar="<custom_blast_file>",
-    #     dest="custom_blast_file",
-    #     help="Alignment/mapping file in custom BLAST format. The required columns and their order are: "
-    #          "'qseqid', 'sseqid', 'slen', 'sstart', 'cigar', 'pident', 'mismatch'."
-    #          "DUDes does not depend on any specific read mapper, but it requires header information "
-    #          "(@SQ SN:gi|556555098|ref|NC_022650.1| LN:55956) and mismatch information (check -i)",
-    # )
+    input_group.add_argument(
+        "-c",
+        metavar="<custom_blast_file>",
+        dest="custom_blast_file",
+        help="Alignment/mapping file in custom BLAST format. The required columns and their order are: "
+             "'qseqid', 'sseqid', 'slen', 'sstart', 'cigar', 'pident', 'mismatch'."
+             "DUDes does not depend on any specific read mapper, but it requires header information "
+             "(@SQ SN:gi|556555098|ref|NC_022650.1| LN:55956) and mismatch information (check -i)",
+    )
     parser.add_argument(
         "-d",
         required=True,
