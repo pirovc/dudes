@@ -85,7 +85,7 @@ def transform_blast_df_into_sam_array(blast_df: pd.DataFrame, refid_lookup: dict
     """
     read_id_lookup = defaultdict(lambda: len(read_id_lookup))
     sam_series = blast_df.apply(lambda row: [
-        refid_lookup[row["sseqid"]],
+        refid_lookup.get(row["sseqid"], -1),
         row["sstart"],
         calculate_match_score(cigar_string=row["cigar"], mismatches=row["mismatch"]),
         # compute_score(row["cigar"]),
