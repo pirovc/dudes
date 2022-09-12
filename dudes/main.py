@@ -389,7 +389,7 @@ def parse_args(version):
         metavar="<custom_blast_file>",
         dest="custom_blast_file",
         help="Alignment/mapping file in custom BLAST format. The required columns and their order are: "
-             "'qseqid', 'sseqid', 'slen', 'sstart', 'cigar', 'pident', 'mismatch'.",
+             "'qseqid', 'sseqid', 'slen', 'sstart', 'cigar', 'pident', 'mismatch'. Additional columns are ignored.",
     )
     input_group.add_argument(
         "-n",

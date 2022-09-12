@@ -43,6 +43,7 @@ def read_blast_tsv(f: Union[str, PathLike[str]]) -> DataFrame:
     }
     df = pd.read_table(
         f,
+        usecols=list(range(0, len(dtypes))),
         names=dtypes.keys(),
         dtype=dtypes,
         converters={"sseqid": parse_uniprot_accession}
