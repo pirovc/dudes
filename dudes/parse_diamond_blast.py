@@ -73,7 +73,7 @@ def transform_blast_df_into_sam_array(blast_df: pd.DataFrame, refid_lookup: dict
     """Build query array.
 
     Args:
-        blast_df: dataframe with required columns "sseqid" and "slen".
+        blast_df: dataframe with required columns "sseqid", "sstart", "cigar", "mismatch", and "qseqid".
         refid_lookup: dictionary with reference accessions as keys and their dudes ID as values
 
     Returns:
