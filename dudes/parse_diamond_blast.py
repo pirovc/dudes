@@ -18,13 +18,16 @@ def read_blast_tsv(f: Union[str, PathLike[str]]) -> DataFrame:
 
     The sseqid column is converted to uniprot accession format ("sp|wasdef|bar" -> "wasdef")
 
-    The dataframe has the following columns:
+    The returned dataframe has the following columns:
     - qseqid: object, Query Seq - id
     - sseqid: object, Subject Seq - id
     - slen: int, Subject sequence length
     - sstart: int, Start of alignment in query
     - cigar: object, CIGAR string
     - pident: float, Percentage of identical matches
+    - evalue: float, expected value of the hit quantifies the number of alignments of similar or better quality that you
+     expect to find searching this query against a database of random sequences the same size as the actual target
+     database.
 
     Args:
         f: path to blast output file
@@ -40,6 +43,7 @@ def read_blast_tsv(f: Union[str, PathLike[str]]) -> DataFrame:
         "cigar": object,
         "pident": float,
         "mismatch": int,
+        "evalue": float,
     }
     df = pd.read_table(
         f,

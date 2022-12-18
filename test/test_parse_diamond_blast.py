@@ -15,7 +15,7 @@ from dudes.parse_diamond_blast import (
 def custom_blast_test_file(resource_dir):
     return (
         resource_dir
-        / "diamond_blast_minimal-qseqid-sseqid-slen-sstart-cigar-pident-mismatch.tsv"
+        / "diamond_blast_minimal-qseqid-sseqid-slen-sstart-cigar-pident-mismatch-evalue.tsv"
     )
 
 
@@ -35,6 +35,7 @@ def test_read_into_dataframe(custom_blast_test_file):
         "cigar",
         "pident",
         "mismatch",
+        "evalue",
     ]
 
 
@@ -93,6 +94,7 @@ def test_parse_blast_with_additional_column(resource_dir):
             "cigar": {0: "17M", 1: "26M"},
             "pident": {0: 100.0, 1: 100.0},
             "mismatch": {0: 0, 1: 0},
+            "evalue": {0: 4.77e-04, 1: 4.77e-04},
         }
     )
     pd.testing.assert_frame_equal(blast_df, expected_df)

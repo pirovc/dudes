@@ -23,7 +23,7 @@ def test_DUDes_sam(tmp_path):
 def test_DUDes_blast(tmp_path):
     produced_output = tmp_path / "dudes_profile_output"
     args = ["dudes",
-            "-c", str(RESOURCE_DIR.relative_to(DUDES_DIR) / "diamond_blast_minimal-qseqid-sseqid-slen-sstart-cigar-pident-mismatch.tsv"),
+            "-c", str(RESOURCE_DIR.relative_to(DUDES_DIR) / "diamond_blast_minimal-qseqid-sseqid-slen-sstart-cigar-pident-mismatch-evalue.tsv"),
             "-d", str(SAMPLEDATA_DIR.relative_to(DUDES_DIR) / "arc-bac_refseq-cg_201503.npz"),
             "-o", str(produced_output)
             ]
