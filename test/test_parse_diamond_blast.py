@@ -24,6 +24,11 @@ def blast_df(custom_blast_test_file):
     return read_blast_tsv(custom_blast_test_file)
 
 
+@pytest.fixture
+def refid_lookup(blast_df):
+    return {refid: i for i, refid in enumerate(blast_df["sseqid"].unique())}
+
+
 def test_read_into_dataframe(custom_blast_test_file):
     returned = read_blast_tsv(custom_blast_test_file)
     assert isinstance(returned, pd.DataFrame)
@@ -53,8 +58,7 @@ def test_parse_reference_lengths():
     np.testing.assert_array_equal(returned, expected)
 
 
-def test_transform_blast_df_into_sam_array(blast_df):
-    refid_lookup = {refid: i for i, refid in enumerate(blast_df["sseqid"].unique())}
+def test_transform_blast_df_into_sam_array(blast_df, refid_lookup):
     sam_array = transform_blast_df_into_sam_array(blast_df, refid_lookup)
     assert isinstance(sam_array, np.ndarray)
     assert (
@@ -63,8 +67,8 @@ def test_transform_blast_df_into_sam_array(blast_df):
     assert sam_array.shape[1] == 4, "Missing Score column in sam array"
 
 
-def test_transform_blast_df_into_sam_array_with_ref_missing_in_refid_lookup(blast_df):
-    refid_lookup = {refid: i for i, refid in enumerate(blast_df["sseqid"].unique()[1:])}
+def test_transform_blast_df_into_sam_array_with_ref_missing_in_refid_lookup(blast_df, refid_lookup):
+    del refid_lookup[refid_lookup.__iter__().__next__()]
     sam_array = transform_blast_df_into_sam_array(blast_df, refid_lookup)
     assert isinstance(sam_array, np.ndarray)
     assert (
