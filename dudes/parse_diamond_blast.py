@@ -46,8 +46,9 @@ def read_blast_tsv(f: Union[str, Path]) -> DataFrame:
     df = pd.read_table(
         f,
         usecols=list(range(0, len(dtypes))),
-        names=dtypes.keys(),
-        dtype=dtypes,
+        names=list(dtypes.keys()),
+        # work around pandas ParserWarning if "sseqid" is in dtype and converters
+        dtype={k: v for k, v in dtypes.items() if k != "sseqid"},
         converters={"sseqid": parse_uniprot_accession}
     )
     return df
