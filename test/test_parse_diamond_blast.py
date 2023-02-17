@@ -15,13 +15,18 @@ from dudes.parse_diamond_blast import (
 def custom_blast_test_file(resource_dir):
     return (
         resource_dir
-        / "diamond_blast_minimal-qseqid-sseqid-slen-sstart-cigar-pident-mismatch.tsv"
+        / "diamond_blast_minimal-qseqid-sseqid-slen-sstart-cigar-pident-mismatch-evalue.tsv"
     )
 
 
 @pytest.fixture
 def blast_df(custom_blast_test_file):
     return read_blast_tsv(custom_blast_test_file)
+
+
+@pytest.fixture
+def refid_lookup(blast_df):
+    return {refid: i for i, refid in enumerate(blast_df["sseqid"].unique())}
 
 
 def test_read_into_dataframe(custom_blast_test_file):
@@ -35,6 +40,7 @@ def test_read_into_dataframe(custom_blast_test_file):
         "cigar",
         "pident",
         "mismatch",
+        "evalue",
     ]
 
 
@@ -52,8 +58,7 @@ def test_parse_reference_lengths():
     np.testing.assert_array_equal(returned, expected)
 
 
-def test_transform_blast_df_into_sam_array(blast_df):
-    refid_lookup = {refid: i for i, refid in enumerate(blast_df["sseqid"].unique())}
+def test_transform_blast_df_into_sam_array(blast_df, refid_lookup):
     sam_array = transform_blast_df_into_sam_array(blast_df, refid_lookup)
     assert isinstance(sam_array, np.ndarray)
     assert (
@@ -62,8 +67,8 @@ def test_transform_blast_df_into_sam_array(blast_df):
     assert sam_array.shape[1] == 4, "Missing Score column in sam array"
 
 
-def test_transform_blast_df_into_sam_array_with_ref_missing_in_refid_lookup(blast_df):
-    refid_lookup = {refid: i for i, refid in enumerate(blast_df["sseqid"].unique()[1:])}
+def test_transform_blast_df_into_sam_array_with_ref_missing_in_refid_lookup(blast_df, refid_lookup):
+    del refid_lookup[refid_lookup.__iter__().__next__()]
     sam_array = transform_blast_df_into_sam_array(blast_df, refid_lookup)
     assert isinstance(sam_array, np.ndarray)
     assert (
@@ -93,6 +98,7 @@ def test_parse_blast_with_additional_column(resource_dir):
             "cigar": {0: "17M", 1: "26M"},
             "pident": {0: 100.0, 1: 100.0},
             "mismatch": {0: 0, 1: 0},
+            "evalue": {0: 4.77e-04, 1: 4.77e-04},
         }
     )
     pd.testing.assert_frame_equal(blast_df, expected_df)

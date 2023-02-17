@@ -16,7 +16,7 @@ biopython = "^1.79"
 matplotlib = "^3.5.1"
 numpy = "^1.21.0"
 pandas = "^1.4.1"
-pyfaidx = "^0.6.4"
+pyfaidx = "^0.7.1"
 tqdm = "^4.63.1"
 
 [tool.poetry.dev-dependencies]
