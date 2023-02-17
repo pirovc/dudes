@@ -94,6 +94,8 @@ def parse_sam(sam_file, sam_format, rl, reference_mode, threads):
 
     if reference_mode == "gi":
         REFID_REGEX = re.compile(r"gi\|(\d*)")
+    elif reference_mode == "up":
+        REFID_REGEX = re.compile(r"\w{2}\|([^|]*)\|")
     else:
         REFID_REGEX = re.compile(r"([A-Z\d_.]*)")  # without ">" from fasta regex
 
