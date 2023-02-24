@@ -8,16 +8,12 @@ license = "MIT"
 [tool.poetry.scripts]
 dudes = "dudes.main:main"
 dudesdb = "dudes.database.main:main"
-dudes-parse-peptides = "dudes.parse_pep_tsv:main"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-biopython = "^1.79"
 matplotlib = "^3.5.1"
 numpy = "^1.21.0"
 pandas = "^1.4.1"
-pyfaidx = "^0.7.1"
-tqdm = "^4.63.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.1"
