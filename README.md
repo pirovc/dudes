@@ -122,12 +122,12 @@ Parameters:
       -c <custom_blast_file>
                             Alignment/mapping file in custom BLAST format. The
                             required columns and their order are: 'qseqid',
-                            'sseqid', 'slen', 'sstart', 'cigar', 'pident',
-                            'mismatch', 'evalue'. Additional columns are ignored.
+                            'sseqid', 'slen', 'sstart', 'evalue'. Additional 
+                            columns are ignored.
                             Example command for creating appropriate file with
                             diamond: 'diamond blastp -q {query_fasta} -d
                             {diamond_database} --outfmt 6 qseqid sseqid slen
-                            sstart cigar pident mismatch evalue'
+                            sstart evalue'
       -d <database_file>    Database file (output from DUDesDB [.npz])
       -i <sam_format>       SAM file format, ignored for custom blast files
                             ['nm': sam file with standard cigar string plus NM

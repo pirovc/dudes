@@ -15,7 +15,7 @@ from dudes.parse_diamond_blast import (
 def custom_blast_test_file(resource_dir):
     return (
         resource_dir
-        / "diamond_blast_minimal-qseqid-sseqid-slen-sstart-cigar-pident-mismatch-evalue.tsv"
+        / "diamond_blast_minimal-qseqid-sseqid-slen-sstart-evalue.tsv"
     )
 
 
@@ -37,9 +37,6 @@ def test_read_into_dataframe(custom_blast_test_file):
         "sseqid",
         "slen",
         "sstart",
-        "cigar",
-        "pident",
-        "mismatch",
         "evalue",
     ]
 
@@ -95,9 +92,6 @@ def test_parse_blast_with_additional_column(resource_dir):
             "sseqid": {0: "NC_012960.1", 1: "NC_017211.1"},
             "slen": {0: 726, 1: 677},
             "sstart": {0: 542, 1: 553},
-            "cigar": {0: "17M", 1: "26M"},
-            "pident": {0: 100.0, 1: 100.0},
-            "mismatch": {0: 0, 1: 0},
             "evalue": {0: 4.77e-04, 1: 4.77e-04},
         }
     )

@@ -33,9 +33,6 @@ def read_blast_tsv(f: Union[str, Path]) -> DataFrame:
             1: sseqid,
             2: slen,
             3: sstart,
-            4: cigar,
-            5: pident,
-            6: mismatch,
             7: evalue
 
     Returns:
@@ -46,9 +43,6 @@ def read_blast_tsv(f: Union[str, Path]) -> DataFrame:
         "sseqid": object,
         "slen": int,
         "sstart": int,
-        "cigar": object,
-        "pident": float,
-        "mismatch": int,
         "evalue": float,
     }
     df = pd.read_table(

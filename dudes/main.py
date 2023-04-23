@@ -386,10 +386,10 @@ def parse_args(version):
         metavar="<custom_blast_file>",
         dest="custom_blast_file",
         help="Alignment/mapping file in custom BLAST format. The required columns and their order are: "
-             "'qseqid', 'sseqid', 'slen', 'sstart', 'cigar', 'pident', 'mismatch', 'evalue'. "
+             "'qseqid', 'sseqid', 'slen', 'sstart', 'evalue'. "
              "Additional columns are ignored. "
              "Example command for creating appropriate file with diamond: 'diamond blastp -q {query_fasta} "
-             "-d {diamond_database} --outfmt 6 qseqid sseqid slen sstart cigar pident mismatch evalue'",
+             "-d {diamond_database} --outfmt 6 qseqid sseqid slen sstart evalue'",
     )
     parser.add_argument(
         "-d",
