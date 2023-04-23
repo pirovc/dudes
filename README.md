@@ -103,75 +103,98 @@ DUDesDB.py links taxonomic information and reference sequences identifiers (GI o
 Parameters:
 -----------
  
-	$ DUDes.py -h
+	$ dudes --help
 
-	usage: DUDes.py [-h] -s <sam_file> -d <database_file> [-i <sam_format>]
-					[-t <threads>] [-x <taxid_start>] [-m <max_read_matches>]
-					[-a <min_reference_matches>] [-l <last_rank>] [-b <bin_size>]
-					[-o <output_prefix>] [-v]
+	usage: dudes [-h] (-s <sam_file> | -c <custom_blast_file>) -d <database_file>
+             [-i <sam_format>] [-t <threads>] [-x <taxid_start>]
+             [-m <max_read_matches>] [-a <min_reference_matches>]
+             [-l <last_rank>] [-b <bin_size>] [--no-normalize]
+             [-o <output_prefix>] [--debug]
+             [--debug_plots_dir DEBUG_PLOTS_DIR] [-v]
 
-	optional arguments:
-	  -h, --help            show this help message and exit
-	  -s <sam_file>         Alignment/mapping file in SAM format. DUDes does not
-							depend on any specific read mapper, but it requires
-							header information (@SQ
-							SN:gi|556555098|ref|NC_022650.1| LN:55956) and
-							mismatch information (check -i)
-	  -d <database_file>    Database file (output from DUDesDB [.npz])
-	  -i <sam_format>       SAM file format ['nm': sam file with standard cigar
-							string plus NM flag (NM:i:[0-9]*) for mismatches count
-							| 'ex': just the extended cigar string]. Default: 'nm'
-	  -t <threads>          # of threads. Default: 1
-	  -x <taxid_start>      Taxonomic Id used to start the analysis (1 = root).
-							Default: 1
-	  -m <max_read_matches>
-							Keep reads up to this number/percentile of matches (0:
-							off / 0-1: percentile / >=1: match count). Default: 0
-	  -a <min_reference_matches>
-							Minimum number/percentage of supporting matches to
-							consider the reference (0: off / 0-1: percentage /
-							>=1: read number). Default: 0.001
-	  -l <last_rank>        Last considered rank [superkingdom,phylum,class,order,
-							family,genus,species,strain]. Default: 'species'
-	  -b <bin_size>         Bin size (0-1: percentile from the lengths of all
-							references in the database / >=1: bp). Default: 0.25
-	  -o <output_prefix>    Output prefix. Default: STDOUT
-	  -v                    show program's version number and exit
+    options:
+      -h, --help            show this help message and exit
+      -s <sam_file>         Alignment/mapping file in SAM format. DUDes does not
+                            depend on any specific read mapper, but it requires
+                            header information (@SQ
+                            SN:gi|556555098|ref|NC_022650.1| LN:55956) and
+                            mismatch information (check -i)
+      -c <custom_blast_file>
+                            Alignment/mapping file in custom BLAST format. The
+                            required columns and their order are: 'qseqid',
+                            'sseqid', 'slen', 'sstart', 'cigar', 'pident',
+                            'mismatch', 'evalue'. Additional columns are ignored.
+                            Example command for creating appropriate file with
+                            diamond: 'diamond blastp -q {query_fasta} -d
+                            {diamond_database} --outfmt 6 qseqid sseqid slen
+                            sstart cigar pident mismatch evalue'
+      -d <database_file>    Database file (output from DUDesDB [.npz])
+      -i <sam_format>       SAM file format, ignored for custom blast files
+                            ['nm': sam file with standard cigar string plus NM
+                            flag (NM:i:[0-9]*) for mismatches count | 'ex': just
+                            the extended cigar string]. Default: 'nm'
+      -t <threads>          # of threads. Default: 1
+      -x <taxid_start>      Taxonomic Id used to start the analysis (1 = root).
+                            Default: 1
+      -m <max_read_matches>
+                            Keep reads up to this number/percentile of matches (0:
+                            off / 0-1: percentile / >=1: match count). Default: 0
+      -a <min_reference_matches>
+                            Minimum number/percentage of supporting matches to
+                            consider the reference (0: off / 0-1: percentage /
+                            >=1: read number). Default: 0.001
+      -l <last_rank>        Last considered rank [superkingdom,phylum,class,order,
+                            family,genus,species,strain]. Default: 'species'
+      -b <bin_size>         Bin size (0-1: percentile from the lengths of all
+                            references in the database / >=1: bp). Default: 0.25
+      --no-normalize        Do not normalize by total sequence length of all
+                            references belonging to an identified TaxID. The idea
+                            of normalization is to quantify cell number rather
+                            than total abundance.
+      -o <output_prefix>    Output prefix. Default: STDOUT
+      --debug               print debug info to STDERR
+      --debug_plots_dir DEBUG_PLOTS_DIR
+                            path to directory for writing debug plots to.
+      -v                    show program's version number and exit
 
 -----------
 
-	$ DUDesDB.py -h
+	$ dudesdb --help
 
-	usage: DUDesDB.py [-h] [-m <reference_mode>] -f
-					  [<fasta_files> [<fasta_files> ...]] -g
-					  [<ref2tax_files> [<ref2tax_files> ...]] -n <nodes_file>
-					  [-a <names_file>] [-o <output_prefix>] [-t <threads>] [-v]
-
-	optional arguments:
-	  -h, --help            show this help message and exit
-	  -m <reference_mode>   'gi' uses the GI as the identifier (For headers like:
-							>gi|158333233|ref|NC_009925.1|) [NCBI is phasing out
-							sequence GI numbers in September 2016]. 'av' uses the
-							accession.version as the identifier (for headers like:
-							>NC_013791.2). Default: 'av'
-	  -f [<fasta_files> [<fasta_files> ...]]
-							Reference fasta file(s) for header extraction only,
-							plain or gzipped - the same file used to generate the
-							read mapping index. Each sequence header '>' should
-							contain a identifier as defined in the reference mode.
-	  -g [<ref2tax_files> [<ref2tax_files> ...]]
-							reference id to taxid file(s):
-							'gi_taxid_nucl.dmp[.gz]' --> 'gi' mode,
-							'*.accession2taxid[.gz]' --> 'av' mode [from NCBI
-							taxonomy database
-							ftp://ftp.ncbi.nih.gov/pub/taxonomy/]
-	  -n <nodes_file>       nodes.dmp file [from NCBI taxonomy database
-							ftp://ftp.ncbi.nih.gov/pub/taxonomy/]
-	  -a <names_file>       names.dmp file [from NCBI taxonomy database
-							ftp://ftp.ncbi.nih.gov/pub/taxonomy/]
-	  -o <output_prefix>    Output prefix. Default: dudesdb
-	  -t <threads>          # of threads. Default: 1
-	  -v                    show program's version number and exit
+	usage: dudesdb [-h] [-m <reference_mode>] -f [<fasta_files> ...] -g
+               [<ref2tax_files> ...] -n <nodes_file> [-a <names_file>]
+               [-o <output_prefix>] [-t <threads>] [-v]
+    
+    options:
+      -h, --help            show this help message and exit
+      -m <reference_mode>   'gi' uses the GI as the identifier (For headers like:
+                            >gi|158333233|ref|NC_009925.1|) [NCBI is phasing out
+                            sequence GI numbers in September 2016]. 'av' uses the
+                            accession.version as the identifier (for headers like:
+                            >NC_013791.2). 'up' uses the uniprot accession as
+                            identifier (for headers like: >sp|Q197F8|... Default:
+                            'av'
+      -f [<fasta_files> ...]
+                            Reference fasta file(s) for header extraction only,
+                            plain or gzipped - the same file used to generate the
+                            read mapping index. Each sequence header '>' should
+                            contain a identifier as defined in the reference mode.
+      -g [<ref2tax_files> ...]
+                            reference id to taxid file(s):
+                            'gi_taxid_nucl.dmp[.gz]' --> 'gi' mode,
+                            '*.accession2taxid[.gz]' --> 'av' mode [from NCBI
+                            taxonomy database https://ftp.ncbi.nlm.nih.gov/pub/tax
+                            onomy/]'idmapping_selected.tab[.gz]' --> 'up' mode
+                            [from https://ftp.expasy.org/databases/uniprot/current
+                            _release/knowledgebase/idmapping/idmapping_selected.ta
+                            b.gz
+      -n <nodes_file>       nodes.dmp file [from NCBI taxonomy database
+                            https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/]
+      -a <names_file>       names.dmp file [from NCBI taxonomy database
+                            https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/]
+      -o <output_prefix>    Output prefix. Default: dudesdb
+      -t <threads>          # of threads. Default: 1
+      -v                    show program's version number and exit
 
 	  
 Change log:

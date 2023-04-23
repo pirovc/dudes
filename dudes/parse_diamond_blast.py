@@ -28,7 +28,15 @@ def read_blast_tsv(f: Union[str, Path]) -> DataFrame:
      database.
 
     Args:
-        f: path to blast output file
+        f: path to blast output file, required columns:
+            0: qseqid,
+            1: sseqid,
+            2: slen,
+            3: sstart,
+            4: cigar,
+            5: pident,
+            6: mismatch,
+            7: evalue
 
     Returns:
         pandas DataFrame

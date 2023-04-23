@@ -372,20 +372,24 @@ def main():
 
 
 def parse_args(version):
-    parser = argparse.ArgumentParser(prog="DUDes.py")
+    parser = argparse.ArgumentParser()
     input_group = parser.add_mutually_exclusive_group(required=True)
     input_group.add_argument(
         "-s",
         metavar="<sam_file>",
         dest="sam_file",
-        help="Alignment/mapping file in SAM format. DUDes does not depend on any specific read mapper, but it requires header information (@SQ SN:gi|556555098|ref|NC_022650.1| LN:55956) and mismatch information (check -i)",
+        help="Alignment/mapping file in SAM format. DUDes does not depend on any specific read mapper, but it requires "
+             "header information (@SQ SN:gi|556555098|ref|NC_022650.1| LN:55956) and mismatch information (check -i)",
     )
     input_group.add_argument(
         "-c",
         metavar="<custom_blast_file>",
         dest="custom_blast_file",
         help="Alignment/mapping file in custom BLAST format. The required columns and their order are: "
-             "'qseqid', 'sseqid', 'slen', 'sstart', 'cigar', 'pident', 'mismatch'. Additional columns are ignored.",
+             "'qseqid', 'sseqid', 'slen', 'sstart', 'cigar', 'pident', 'mismatch', 'evalue'. "
+             "Additional columns are ignored. "
+             "Example command for creating appropriate file with diamond: 'diamond blastp -q {query_fasta} "
+             "-d {diamond_database} --outfmt 6 qseqid sseqid slen sstart cigar pident mismatch evalue'",
     )
     parser.add_argument(
         "-d",
@@ -399,7 +403,8 @@ def parse_args(version):
         metavar="<sam_format>",
         dest="sam_format",
         default="nm",
-        help="SAM file format ['nm': sam file with standard cigar string plus NM flag (NM:i:[0-9]*) for mismatches count | 'ex': just the extended cigar string]. Default: 'nm'",
+        help="SAM file format, ignored for cumstom blast files ['nm': sam file with standard cigar string plus NM flag "
+             "(NM:i:[0-9]*) for mismatches count | 'ex': just the extended cigar string]. Default: 'nm'",
     )
     parser.add_argument(
         "-t",
@@ -423,7 +428,8 @@ def parse_args(version):
         dest="max_read_matches",
         type=float,
         default=0,
-        help="Keep reads up to this number/percentile of matches (0: off / 0-1: percentile / >=1: match count). Default: 0",
+        help="Keep reads up to this number/percentile of matches (0: off / 0-1: percentile / >=1: match count). "
+             "Default: 0",
     )
     parser.add_argument(
         "-a",
@@ -431,7 +437,8 @@ def parse_args(version):
         dest="min_reference_matches",
         type=float,
         default=0.001,
-        help="Minimum number/percentage of supporting matches to consider the reference (0: off / 0-1: percentage / >=1: read number). Default: 0.001",
+        help="Minimum number/percentage of supporting matches to consider the reference "
+             "(0: off / 0-1: percentage / >=1: read number). Default: 0.001",
     )
     parser.add_argument(
         "-l",

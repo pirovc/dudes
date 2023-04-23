@@ -397,7 +397,7 @@ def get_reference_identifiers(fasta_files, ref_mode):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(prog="DUDesDB.py")
+    parser = argparse.ArgumentParser()
     parser.add_argument(
         "-m",
         metavar="<reference_mode>",
