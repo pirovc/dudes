@@ -147,10 +147,6 @@ Parameters:
                             family,genus,species,strain]. Default: 'species'
       -b <bin_size>         Bin size (0-1: percentile from the lengths of all
                             references in the database / >=1: bp). Default: 0.25
-      --no-normalize        Do not normalize by total sequence length of all
-                            references belonging to an identified TaxID. The idea
-                            of normalization is to quantify cell number rather
-                            than total abundance.
       -o <output_prefix>    Output prefix. Default: STDOUT
       --debug               print debug info to STDERR
       --debug_plots_dir DEBUG_PLOTS_DIR
