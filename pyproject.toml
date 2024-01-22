@@ -1,9 +1,13 @@
 [tool.poetry]
 name = "dudes"
 version = "0.10.0"
-description = ""
-authors = ["Henning Schiebenhoefer <henning.schiebenhoefer@posteo.de>"]
+description = "DUDes: a top-down taxonomic profiler for metagenomics and metaproteomics"
+authors = [
+    "Vitor C. Piro <vitorpiro@gmail.com>",
+    "Henning Schiebenhoefer <henning.schiebenhoefer@posteo.de>"
+]
 license = "MIT"
+repository = "https://github.com/pirovc/dudes"
 
 [tool.poetry.scripts]
 dudes = "dudes.main:main"
