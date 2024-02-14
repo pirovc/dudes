@@ -568,6 +568,7 @@ def treeIter(pool, iter, smap, ttree, refs, taxid_start, stop_rank, debug_plot_d
                 )
             )
 
+            rankid = None
             if children_ranks.size == 0:  # No children, reached a leaf node
                 continue
             elif children_ranks.size == 1:  # Only one rankid
@@ -590,8 +591,8 @@ def treeIter(pool, iter, smap, ttree, refs, taxid_start, stop_rank, debug_plot_d
                         rankid = cr
                         rank_matches = m
 
-            # Exit on last rank
-            if rankid > getIndexRank(stop_rank) and stop_rank != "strain":
+            # Exit if no child_rank has a sum of bin scores >= 0 and on last rank
+            if rankid is None or (rankid > getIndexRank(stop_rank) and stop_rank != "strain"):
                 continue
 
             # Select a subset of results (children of the parent node with the same rank)
