@@ -43,6 +43,7 @@ def test_read_into_dataframe(custom_blast_test_file):
 
 def test_parse_uniprot_accession():
     assert parse_uniprot_accession("sp|the_accession|asdfg") == "the_accession"
+    assert parse_uniprot_accession("the_accession") == "the_accession"
 
 
 def test_parse_reference_lengths():

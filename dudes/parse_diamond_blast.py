@@ -8,7 +8,10 @@ from pandas import DataFrame
 
 
 def parse_uniprot_accession(raw_accession):
-    return raw_accession.split("|")[1]
+    try:
+        return raw_accession.split("|")[1]
+    except IndexError:
+        return raw_accession
 
 
 def read_blast_tsv(f: Union[str, Path]) -> DataFrame:
