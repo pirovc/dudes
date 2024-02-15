@@ -3,7 +3,7 @@ name = "dudes"
 version = "0.10.0"
 description = "DUDes: a top-down taxonomic profiler for metagenomics and metaproteomics"
 authors = [
-    "Vitor C. Piro <vitorpiro@gmail.com>",
+    "Vitor C. Piro <pirovc.github.io>",
     "Henning Schiebenhoefer <henning.schiebenhoefer@posteo.de>"
 ]
 license = "MIT"
