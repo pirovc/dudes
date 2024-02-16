@@ -75,6 +75,7 @@ dudesdb -m 'av' -f references.fasta -n nodes.dmp -a names.dmp -g nucl_gb.accessi
 - Choose the parameter `-m` considering the format of the headers in your reference sequences:
 	- `-m 'av'`: New NCBI header [>NC_009925.1 Acaryochloris marina MBIC11017, complete genome.]
 	- `-m 'gi'`: Old NCBI header [>gi|158333233|ref|NC_009925.1| Acaryochloris marina MBIC11017, complete genome.]
+    - `-m 'up'`: UniProt header [>sp|Q197F8|002R_IIV3 Uncharacterized protein 002R OS=Invertebrate iridescent virus 3 OX=345201 GN=IIV3-002R PE=4 SV=1]
 - `nodes.dmp` and `names.dmp` can be obtained from: [taxdump.tar.gz](http://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz)
 - `nucl_gb.accession2taxid`, `nucl_wgs.accession2taxid` or `gi_taxid_nucl.dmp.gz`(depending on your reference origin) can be obtained from [here](http://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/)
 
