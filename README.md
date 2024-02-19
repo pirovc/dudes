@@ -33,11 +33,11 @@ dudes -s sampledata/hiseq_accuracy_k60.sam -d sampledata/arc-bac_refseq-cg_20150
 
 - Download the pre-compiled database:
 	
-| Info 	| Date	| Size	| Link	|
-| --- 	| --- 	| ---	| ---	|
+| Info 	                                       | Date	   | Size	   | Link	                                                                           |
+|----------------------------------------------|---------|---------|---------------------------------------------------------------------------------|
 | Archaea + Bacteria - RefSeq Complete Genomes | 2015-03 | 13.2 GB | https://zenodo.org/record/1036748/files/dudesdb_arc-bac_refseq-cg_201503.tar.gz |
 | Archaea + Bacteria - RefSeq Complete Genomes | 2017-09 | 37.7 GB | https://zenodo.org/record/1037091/files/dudesdb_arc-bac_refseq-cg_201709.tar.gz |
-| Fungal + Viral - RefSeq Complete Genomes | 2017-09 | 9.5 GB | https://zenodo.org/record/1037288/files/dudesdb_fun-vir_refseq-cg_201709.tar.gz |
+| Fungal + Viral - RefSeq Complete Genomes     | 2017-09 | 9.5 GB  | https://zenodo.org/record/1037288/files/dudesdb_fun-vir_refseq-cg_201709.tar.gz |
 
 Unpack:
 	
@@ -55,6 +55,50 @@ Run DUDes:
 
 ```sh
 dudes -s mapping_output.sam -d dudesdb_arc-bac_refseq-cg_201709/arc-bac_refseq-cg_201709.npz -o output_prefix
+```
+
+## Example with pre-compiled DB for metaproteomics:
+
+- Download the pre-compiled dudes database:
+	
+| Info 	                     | Date	   | Size	  | Link	                                                                   |
+|----------------------------|---------|--------|-------------------------------------------------------------------------|
+| UniProt SwissProt + TrEMBL | 2024-01 | 6.4 GB | https://zenodo.org/uploads/10680335/files/dudesdb_uniprot_202401.tar.gz |
+
+Unpack:
+	
+```sh
+tar zxfv dudesdb_uniprot_202401.tar.gz
+```
+
+Map your peptides (fasta) with diamond (any other mapper/index can be used - check `-i` parameter on DUDes.py):
+
+Download and unpack Version 2024-01 for the UniProt SwissProt and TrEMBL fasta: https://ftp.ebi.ac.uk/pub/databases/uniprot/previous_releases/release-2023_05/knowledgebase/knowledgebase2023_05.tar.gz
+
+
+```sh
+tar zxfv knowledgebase2023_05.tar.gz knowledgebase/complete/uniprot_sprot.fasta.gz knowledgebase/complete/uniprot_trembl.fasta.gz
+```
+
+Create the database:	
+```sh
+zcat knowledgebase/complete/uniprot_sprot.fasta.gz knowledgebase/complete/uniprot_trembl.fasta.gz | diamond makedb --db diamond_database.dmnd
+```
+
+Map your peptides:
+```sh
+diamond blastp  \
+        -q path/to/your.fasta \
+        -d diamond_database.dmnd \
+        --fast \
+        --outfmt 6 qseqid sseqid slen sstart evalue \
+        -o mapping_output.tsv
+```
+
+Run DUDes:
+
+```sh
+dudes -c mapping_output.tsv -d dudes_db.npz -o output_prefix
 ```
 
 Custom index and dudes database:
