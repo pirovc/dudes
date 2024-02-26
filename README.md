@@ -63,7 +63,7 @@ dudes -s mapping_output.sam -d dudesdb_arc-bac_refseq-cg_201709/arc-bac_refseq-c
 	
 | Info 	                     | Date	   | Size	  | Link	                                                                   |
 |----------------------------|---------|--------|-------------------------------------------------------------------------|
-| UniProt SwissProt + TrEMBL | 2024-01 | 6.4 GB | https://zenodo.org/uploads/10680335/files/dudesdb_uniprot_202401.tar.gz |
+| UniProt SwissProt + TrEMBL | 2024-01 | 6.4 GB | https://zenodo.org/records/10680335/files/dudesdb_uniprot_202401.tar.gz |
 
 Unpack:
 	
